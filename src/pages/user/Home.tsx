@@ -2,28 +2,9 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { VideoCard } from "@/components/user/VideoCard";
-
-const fetchVideos = async ({ pageParam = 1 }) => {
-    const res = await fetch(
-        `https://api.pexels.com/videos/search?query=nature&per_page=5&page=${pageParam}`,
-        {
-            headers: {
-                Authorization: import.meta.env.VITE_PEXELS_API_KEY,
-            },
-        }
-    );
-
-    if (!res.ok) throw new Error("Failed to fetch videos");
-    const data = await res.json();
-
-    const videos = data.videos.map((v: any) => ({
-        id: v.id,
-        url: v.video_files[0]?.link,
-        username: v.user?.name || "Pexels User",
-    }));
-
-    return { videos, nextPage: pageParam + 1, hasMore: data.videos.length > 0 };
-};
+import { fetchVideos } from "@/api/feed";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 
 export default function Home() {
     const {
@@ -43,7 +24,7 @@ export default function Home() {
     const [activeIndex, setActiveIndex] = useState(0);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
-    // Infinite scroll observer (trigger load when near bottom)
+    // Infinite scroll observer
     useEffect(() => {
         if (!loadMoreRef.current || !hasNextPage) return;
 
@@ -63,23 +44,26 @@ export default function Home() {
     const allVideos = data?.pages.flatMap((page) => page.videos) || [];
 
     if (status === "pending")
-        return <p className="text-center mt-10 text-white">Loading...</p>;
+        return (
+            <div className="flex flex-col gap-4 items-center justify-center h-screen bg-background text-foreground">
+                <Skeleton className="w-40 h-6" />
+                <p className="text-sm text-muted-foreground">Loading videos...</p>
+            </div>
+        );
+
     if (status === "error")
         return (
-            <p className="text-center mt-10 text-red-500">
+            <p className="text-center mt-10 text-destructive">
                 Failed to load videos.
             </p>
         );
 
     return (
         <div
-            className="
-        h-screen w-full
-        overflow-y-scroll 
-        snap-y snap-mandatory
-        scrollbar-none 
-        bg-black
-      "
+            className={cn(
+                "h-screen w-full overflow-y-scroll snap-y snap-mandatory scrollbar-none",
+                "bg-background text-foreground"
+            )}
             onScroll={(e) => {
                 const scrollTop = e.currentTarget.scrollTop;
                 const windowHeight = window.innerHeight;
@@ -101,7 +85,7 @@ export default function Home() {
             {/* Infinite scroll trigger */}
             <div
                 ref={loadMoreRef}
-                className="h-20 w-full flex justify-center items-center text-white"
+                className="h-20 w-full flex justify-center items-center text-muted-foreground"
             >
                 {isFetchingNextPage && <p>Loading more videos...</p>}
             </div>
