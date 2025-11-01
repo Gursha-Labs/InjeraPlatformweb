@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { VideoCard } from "@/components/user/VideoCard";
@@ -24,7 +23,6 @@ export default function Home() {
     const [activeIndex, setActiveIndex] = useState(0);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
-    // Infinite scroll observer
     useEffect(() => {
         if (!loadMoreRef.current || !hasNextPage) return;
 
@@ -42,7 +40,6 @@ export default function Home() {
     }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
     const allVideos = data?.pages.flatMap((page) => page.videos) || [];
-
     if (status === "pending")
         return (
             <div className="flex flex-col gap-4 items-center justify-center h-screen bg-background text-foreground">
@@ -71,14 +68,18 @@ export default function Home() {
                 setActiveIndex(index);
             }}
         >
+
+
             {allVideos.map((v, i) => (
+
                 <div key={v.id || i} className="snap-center">
                     <VideoCard
-                        src={v.url}
-                        username={v.username}
+                        v={v}
                         index={i}
                         activeIndex={activeIndex}
                     />
+
+
                 </div>
             ))}
 

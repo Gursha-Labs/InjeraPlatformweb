@@ -1,26 +1,37 @@
-/*eslint-disable*/
-export const fetchVideos = async ({ pageParam = 1 }) => {
+import apiClient from "./apiClinet";
+
+import type { FetchAdsResponse, AdVideo } from "@/types/api/ad";
+
+interface FetchVideosParams {
+  pageParam?: number;
+}
+
+interface FetchVideosResult {
+  videos: AdVideo[];
+  nextPage: number;
+  hasMore: boolean;
+}
+
+export const fetchVideos = async ({
+  pageParam = 1,
+}: FetchVideosParams): Promise<FetchVideosResult> => {
   try {
-    const res = await fetch(
-      `https://api.pexels.com/videos/search?query=nature&per_page=5&page=${pageParam}`,
-      {
-        headers: {
-          Authorization: import.meta.env.VITE_PEXELS_API_KEY,
-        },
-      }
+    const res = await apiClient.get<FetchAdsResponse>(
+      `/feed?page=${pageParam}`
     );
 
-    if (!res.ok) throw new Error("Failed to fetch videos");
-    const data = await res.json();
+    const data = res.data;
+    if (!data?.data) throw new Error("Invalid API response structure");
 
-    const videos = data.videos.map((v: any) => ({
-      id: v.id,
-      url: v.video_files[0]?.link,
-      username: v.user?.name || "Pexels User",
-    }));
-
-    return { videos, nextPage: pageParam + 1, hasMore: data.videos.length > 0 };
-  } catch (err: any) {
-    throw new Error(err.message);
+    return {
+      videos: data.data,
+      nextPage: data.hasNextPage ? pageParam + 1 : pageParam,
+      hasMore: data.hasNextPage,
+    };
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      throw new Error(err.message);
+    }
+    throw new Error(String(err));
   }
 };
