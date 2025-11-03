@@ -1,10 +1,8 @@
-"use client";
-
 import { useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
     MessageCircle,
-    Share2,
+
     Coins,
     Search,
     BookmarkPlus,
@@ -20,16 +18,13 @@ import {
     SheetTrigger,
 } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import type { AdVideo } from "@/types/models/adVideo";
+import { AdvertiserHoverCard } from "./AdvertiserHoverCard";
+import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
+import ShareDialog from "./ShareDialog";
+import { Link } from "react-router-dom";
+
 
 interface VideoCardProps {
     v: AdVideo
@@ -45,10 +40,6 @@ export function VideoCard({
     const videoRef = useRef<HTMLVideoElement | null>(null);
     console.log(v)
     const points = 500
-
-
-
-
     useEffect(() => {
         const video = videoRef.current;
         if (!video) return;
@@ -87,6 +78,7 @@ export function VideoCard({
 
                 {/* --- Top Info Bar --- */}
                 <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-20">
+                    {/* ---info about the adveritser--- */}
                     <div>
                         <div className="flex items-center gap-2 bg-muted/40 backdrop-blur-md px-3 py-1 rounded-full mb-2">
                             <Coins className="w-4 h-4 text-yellow-400" />
@@ -94,30 +86,34 @@ export function VideoCard({
                         </div>
 
                         <div className="flex items-center gap-3">
-                            <img
-                                src={v.advertiser?.avatar}
-                                alt={v.advertiser?.username}
-                                className="w-10 h-10 rounded-full border border-border object-cover"
-                            />
-                            <span className="font-semibold">@{v.advertiser?.username}</span>
+                            <Link to="/profile">
+                                <Avatar>
+                                    <AvatarImage src={v.advertiser?.avatar || "/placeholder-avatar.png"} />
+                                    <AvatarFallback>
+                                        {v.advertiser?.username?.charAt(0).toUpperCase() || "U"}
+                                    </AvatarFallback>
+                                </Avatar>
+                            </Link>
+
+                            <AdvertiserHoverCard v={v} />
                         </div>
                     </div>
 
                     {/* Search Button */}
                     <div className="p-2 rounded-full bg-muted/10 backdrop-blur hover:bg-muted/20 cursor-pointer transition">
-                        <Search className="w-5 h-5" />
+                        <Link to="/search"><Search className="w-5 h-5" /></Link>
                     </div>
                 </div>
-
-                {/* --- Caption (Bottom Left) --- */}
+                {/* -----tag section */}
                 <div className="absolute bottom-16 left-5 max-w-[80%] z-10">
                     <h3 className="text-lg font-semibold">@{v.advertiser?.username}</h3>
                     <p className="text-sm text-muted-foreground">
-                        Awesome video caption 🎵 #fun #trending
+                        {
+                            v.tags.map((el) => el)
+                        }
                     </p>
                 </div>
-
-                {/* --- Actions (Right Side) --- */}
+                {/* actions section  */}
                 <div className="absolute right-5 bottom-24 flex flex-col gap-5 items-center z-10">
                     <Sheet>
                         <SheetTrigger asChild>
@@ -141,29 +137,16 @@ export function VideoCard({
 
                     <ActionButton icon={<BookmarkPlus />} label="Save" />
 
-                    <Dialog>
-                        <DialogTrigger>
-                            <ActionButton icon={<Share2 />} label="Share" />
-                        </DialogTrigger>
-                        <DialogContent>
-                            <DialogHeader>
-                                <DialogTitle>Share to your friends?</DialogTitle>
-                                <DialogDescription>
-                                    Copy the link and send to your friends
-                                </DialogDescription>
-                            </DialogHeader>
-                        </DialogContent>
-                    </Dialog>
+                    <ShareDialog v={v} />
 
                     <ActionButton icon={<ExternalLink />} label="Visit" />
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
 
-// Reusable small action button component
-function ActionButton({ icon, label }: { icon: React.ReactNode; label: string }) {
+export function ActionButton({ icon, label }: { icon: React.ReactNode; label: string }) {
     return (
         <div className="flex flex-col items-center">
             <Button
