@@ -72,6 +72,7 @@ export default function Signup() {
             navigate(`/varify-otp/${data.user.email}`)
         },
         onError: (err) => {
+            console.log(err)
             toast.error(err.message)
         },
     })

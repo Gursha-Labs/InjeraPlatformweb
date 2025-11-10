@@ -31,3 +31,13 @@ export interface LoginResponse {
   message: string;
   token: string;
 }
+export interface RegisterErrorResponse {
+  message?: string;
+  errors?: Record<string, string[]>;
+}
+export interface ResetPasswordParam {
+  password: string;
+  conformpassword: string;
+  otp: string;
+  email: string;
+}
