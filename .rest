@@ -1,0 +1,33 @@
+### testing the api 
+
+
+#--- sending the registration to the api endpoint
+POST http://127.0.0.1:8000/api/register
+Content-Type: application/json
+
+{
+    "username":"naol528",
+    "email":"collegeberea6@gmail.com",
+    "password":"12345678",
+    "type":"user"
+}
+
+###
+#--- varify the otp with the api 
+
+post http://127.0.0.1:8000/api/verify-email 
+Content-Type: application/json
+
+{
+    "email":"collegeberea6@gmail.com",
+    "otp":"271260"
+}
+### login the user
+#--- login the user 
+post http://127.0.0.1:8000/api/login
+Content-Type: application/json
+
+{
+    "login":"collegeberea6@gmail.com",
+    "password":"12345678"
+}
