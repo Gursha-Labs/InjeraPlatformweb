@@ -1,64 +1,46 @@
-import { IconCirclePlusFilled, IconMail, type Icon } from "@tabler/icons-react"
+import { SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar"
+import { Link } from "react-router-dom"
+import { cn } from "@/lib/utils"
+import type { Icon as TablerIcon } from "@tabler/icons-react"
 
-import {
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from "@/components/ui/sidebar"
-import { SquareDashedKanban } from "lucide-react"
-import { NavLink } from "react-router-dom"
+export type NavMainItem = {
+  title: string
+  url: string
+  icon: TablerIcon
+  isActive?: boolean
+}
 
-export function NavMain({
-  items,
-}: {
-  items: {
-    title: string
-    url: string
-    icon?: Icon | undefined
-  }[]
-}) {
+export interface NavMainProps {
+  items: NavMainItem[]
+}
+
+export function NavMain({ items }: NavMainProps) {
+
   return (
-    <SidebarGroup>
-      <SidebarGroupContent className="flex flex-col gap-2">
-        <SidebarMenu>
-          <SidebarMenuItem className="flex items-center gap-2">
-
-
-
-            <SidebarMenuButton
-              tooltip="Quick Create"
-              className="bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear"
+    <SidebarMenu>
+      {items.map((item) => (
+        <SidebarMenuItem key={item.title}>
+          <SidebarMenuButton asChild>
+            <Link
+              to={item.url}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2 rounded-md transition-all border-l-4",
+                item.isActive
+                  ? "bg-primary/10 text-primary border-primary font-medium shadow-sm"
+                  : "border-transparent hover:bg-muted/40 hover:border-muted"
+              )}
             >
-
-              <SquareDashedKanban />   <NavLink to="/advertiser">  <span>Dashboard</span></NavLink>
-
-            </SidebarMenuButton>
-            { /*<Button
-              size="icon"
-              className="size-8 group-data-[collapsible=icon]:opacity-0"
-              variant="outline"
-            >
-              <IconMail />
-              <span className="sr-only">Inbox</span>
-            </Button> */}
-          </SidebarMenuItem>
-        </SidebarMenu>
-        <SidebarMenu>
-          {items.map((item) => (
-            <SidebarMenuItem key={item.title}>
-              <NavLink to={item.url} >
-
-                <SidebarMenuButton tooltip={item.title}>
-                  {item?.icon && <item.icon />}
-                  <span>{item.title}</span>
-                </SidebarMenuButton>
-              </NavLink>
-            </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
-      </SidebarGroupContent>
-    </SidebarGroup >
+              <item.icon
+                className={cn(
+                  "size-4 transition-colors",
+                  item.isActive && "text-primary"
+                )}
+              />
+              <span>{item.title}</span>
+            </Link>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      ))}
+    </SidebarMenu>
   )
 }
