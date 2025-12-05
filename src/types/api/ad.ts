@@ -1,3 +1,5 @@
+import type { AdVideo } from "../models/adVideo";
+
 export interface FetchAdsRequest {
   page?: number;
   limit?: number;
@@ -20,22 +22,6 @@ export interface Advertiser {
   website_url?: string;
 }
 
-export interface AdVideo {
-  id: string;
-  title: string;
-  description: string;
-  video_url: string;
-  category: Category;
-  tags: string[];
-  advertiser: Advertiser;
-  duration: number;
-  view_count: number;
-  comment_count: number;
-  created_at: string;
-  updated_at: string;
-  is_active: boolean;
-}
-
 export interface PaginationMeta {
   currentPage: number;
   totalPages: number;
@@ -47,4 +33,6 @@ export interface PaginationMeta {
 
 export interface FetchAdsResponse extends PaginationMeta {
   data: AdVideo[];
+  has_more: boolean;
+  nextPage: number;
 }
