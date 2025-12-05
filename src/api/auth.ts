@@ -6,64 +6,30 @@ import type {
   ResetPasswordParam,
   VarifyEmailRequest,
   VarifyEmailResponse,
-} from "@/types/api/auth";
+} from "@/types";
 import apiClient from "./apiClinet";
 import { handleApiResponse } from "@/lib/handleApiResponse";
-
-export const registerUser = async ({
-  username,
-  password,
-  email,
-  type,
-}: RegistrationRequest) => {
+export const registerUser = async (payload: RegistrationRequest) => {
   return handleApiResponse<RegistrationResponse>(() =>
-    apiClient.post("/register", {
-      email,
-      username,
-      password,
-      type,
-    })
+    apiClient.post("/register", payload)
   );
 };
-
-export const varifyEmail = async ({ email, otp }: VarifyEmailRequest) => {
+export const varifyEmail = async (payload: VarifyEmailRequest) => {
   return handleApiResponse<VarifyEmailResponse>(() =>
-    apiClient.post("/verify-email", {
-      email,
-      otp,
-    })
+    apiClient.post("/verify-email", payload)
   );
 };
-
-export const login = async ({ login, password }: LoginRequest) => {
+export const login = async (payload: LoginRequest) => {
   return handleApiResponse<LoginResponse>(() =>
-    apiClient.post("/login", {
-      login,
-      password,
-    })
+    apiClient.post("/login", payload)
   );
 };
-
-export const forgotPassword = async ({ email }: { email: string }) => {
-  return handleApiResponse(() =>
-    apiClient.post("/forgot-password", {
-      email,
-    })
-  );
+export const forgotPassword = async (payload: { email: string }) => {
+  return handleApiResponse(() => apiClient.post("/forgot-password", payload));
 };
-
-export const resetPassword = async ({
-  password,
-  conformpassword,
-  otp,
-  email,
-}: ResetPasswordParam) => {
-  return handleApiResponse(() =>
-    apiClient.post<ResetPasswordParam>("/reset-password", {
-      email,
-      password,
-      password_confirmation: conformpassword,
-      otp,
-    })
-  );
+export const resetPassword = async (payload: ResetPasswordParam) => {
+  return handleApiResponse(() => apiClient.post("/reset-password", payload));
+};
+export const me = async () => {
+  return handleApiResponse(() => apiClient.get("/me"));
 };

@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react"
-import { useParams, useNavigate } from "react-router-dom"
+import { useParams, useNavigate, Navigate } from "react-router-dom"
 import { useMutation } from "@tanstack/react-query"
 import { varifyEmail } from "@/api/auth"
 import { Button } from "@/components/ui/button"
@@ -63,7 +63,21 @@ export default function VarifyEmail() {
         if (email == undefined) return
         mutate({ email, otp: code })
     }
+    const user = JSON.parse(localStorage.getItem("user"))
 
+    if (user) {
+        if (user.type === "admin") {
+            return <Navigate to="/admin" replace />
+        }
+        if (user.type === "advertiser") {
+            return <Navigate to="/advertiser" replace />
+        }
+        if (user.type === "user") {
+            return <Navigate to="/injera" replace />
+        }
+
+
+    }
     return (
         <div className="flex min-h-screen items-center justify-center bg-background px-4">
             <Card className="w-full max-w-md shadow-xl rounded-2xl z-50">

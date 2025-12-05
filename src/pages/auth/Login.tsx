@@ -14,7 +14,7 @@ import {
     FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { Link, useNavigate } from "react-router-dom"
+import { Link, Navigate, useNavigate } from "react-router-dom"
 import { useState } from "react"
 import { useMutation } from "@tanstack/react-query"
 import { login } from "@/api/auth"
@@ -31,7 +31,7 @@ export default function Login() {
             localStorage.setItem("user", JSON.stringify(data.user))
             toast.success(data.message)
             if (data.user.type === "user") {
-                navigate("/")
+                navigate("/injera")
             }
             else if (data.user.type === "advertiser") {
                 navigate("/advertiser")
@@ -55,6 +55,21 @@ export default function Login() {
             password,
             login: email,
         })
+    }
+    const user = JSON.parse(localStorage.getItem("user"))
+
+    if (user) {
+        if (user.type === "admin") {
+            return <Navigate to="/admin" replace />
+        }
+        if (user.type === "advertiser") {
+            return <Navigate to="/advertiser" replace />
+        }
+        if (user.type === "user") {
+            return <Navigate to="/injera" replace />
+        }
+
+
     }
     return (
         <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-muted to-background p-6">

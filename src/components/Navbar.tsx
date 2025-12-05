@@ -10,10 +10,10 @@ export default function NavBar() {
     const pathname = useLocation().pathname;
 
     const tabs = [
-        { icon: Home, label: "Home", href: "/" },
-        { icon: Search, label: "Search", href: "/search" },
-        { icon: Gamepad2, label: "Game", href: "/game" },
-        { icon: Settings, label: "Settings", href: "/setting" },
+        { icon: Home, label: "Home", href: "/injera" },
+        { icon: Search, label: "Search", href: "/injera/search" },
+        { icon: Gamepad2, label: "Game", href: "/injera/game" },
+        { icon: Settings, label: "Settings", href: "/injera/setting" },
     ];
 
     return (

@@ -1,84 +1,80 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom"
-import Home from "./pages/user/Home"
-import RootLayout from "./layout/RootLayout"
-import { ThemeProvider } from "./components/theme-provider"
-import { Toaster } from "./components/ui/sonner"
-import Profile from "./pages/user/Profile"
-import Login from "./pages/auth/Login"
-import Signup from "./pages/auth/Signup"
-import ProfileBuild from "./pages/user/ProfileBuild"
-import VarifyEmail from "./pages/auth/VarifyEmail"
-import ForgetPassword from "./pages/auth/ForgetPassword"
-import ResetPassword from "./pages/auth/ResetPassword"
-import Page from "./pages/advertizer/dashboard"
+import { Routes, Route, useLocation } from "react-router-dom";
+import { useEffect } from "react";
+import { useAppDispatch } from "./store/hook";
+import { fetchUser } from "./store/slices/authSlice";
+import { ThemeProvider } from "./components/theme-provider";
+import { Toaster } from "./components/ui/sonner";
 
+// layouts
+import RootLayout from "./layout/RootLayout";
+// import ProtectedRoute from "./components/ProtectedRoute";
+
+// user pages
+import Home from "./pages/user/Home";
+import Profile from "./pages/user/Profile";
+import ProfileBuild from "./pages/user/ProfileBuild";
+
+// auth pages
+import Login from "./pages/auth/Login";
+import Signup from "./pages/auth/Signup";
+import VarifyEmail from "./pages/auth/VarifyEmail";
+import ForgetPassword from "./pages/auth/ForgetPassword";
+import ResetPassword from "./pages/auth/ResetPassword";
+
+// advertiser
+import Page from "./pages/advertizer/dashboard";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Index from "./pages/advertizer/Index";
+import UploadAd from "./pages/advertizer/UploadAd";
+import Setting from "./pages/user/Setting";
 
 function App() {
-  const router = createBrowserRouter(
-    [
-      // auth route
-      {
-        path: "/login", element: <Login />
-      },
-      {
-        path: `/varify-otp/:email`, element: <VarifyEmail />
-      },
-      {
-        path: "/signup", element: <Signup />
-      },
-      {
-        path: "/user-profile-build", element: <ProfileBuild />
-      },
-      {
+  const dispatch = useAppDispatch();
+  const location = useLocation();
 
-        path: "/forgetpassword", element: <ForgetPassword />
+  useEffect(() => {
+    dispatch(fetchUser());
+  }, [dispatch]);
 
-      },
-      {
-        path: "/resetpassword/:email", element: <ResetPassword />
-      },
-      // user route 
-      {
-        element: <RootLayout />,
-        children: [
-          {
-            index: true, element: <Home />
-          },
-          {
-            path: "/search", element: <>search</>
-          },
-          {
-            path: "/game", element: <>games</>
-          },
-          {
-            path: "/setting", element: <Home />
-          },
-          {
-            path: "/profile", element: <Profile />
-          },
-
-        ]
-      },
-
-      // adveriser route
-      {
-        path: "/advertiser",
-        element: <Page />
-      },
-      // admin route 
-      {
-        path: "/admin",
-        element: <>admin page</>
-      }
-    ])
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <RouterProvider router={router} />
+      <Routes key={location.pathname}>
+        {/* Public Auth Routes */}
+        <Route path="/" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/varify-otp/:email" element={<VarifyEmail />} />
+        <Route path="/user-profile-build" element={<ProfileBuild />} />
+        <Route path="/forgetpassword" element={<ForgetPassword />} />
+        <Route path="/resetpassword/:email" element={<ResetPassword />} />
+
+        {/* Protected User Routes */}
+        <Route element={<ProtectedRoute types={["user"]} />} >
+          <Route path="/injera" element={<RootLayout />}>
+            <Route index element={<Home />} />
+            <Route path="search" element={<>search</>} />
+            <Route path="game" element={<>games</>} />
+            <Route path="setting" element={<Setting />} />
+            <Route path="profile" element={<Profile />} />
+          </Route>
+        </Route>
+
+        {/* Advertiser Route */}
+        <Route >
+          <Route element={<ProtectedRoute types={["advertiser"]} />}>
+            <Route path="/advertiser" element={<Page />} >
+              <Route index element={<Index />} />
+              <Route path="uploadAd" element={<UploadAd />} />
+            </Route>
+          </Route>
+
+        </Route>
+
+        {/* Admin Route */}
+        <Route path="/admin" element={<>admin page</>} />
+      </Routes>
+
       <Toaster position="top-center" expand={true} richColors />
-    </ThemeProvider>
-  )
-
+    </ThemeProvider >
+  );
 }
-
-export default App
-
+export default App;
