@@ -1,6 +1,5 @@
 ### testing the api 
 
-
 #--- sending the registration to the api endpoint
 POST http://127.0.0.1:8000/api/register
 Content-Type: application/json
@@ -31,3 +30,10 @@ Content-Type: application/json
     "login":"collegeberea6@gmail.com",
     "password":"12345678"
 }
+
+
+
+### categories 
+#-- fetch categories
+get http://127.0.0.1:8000/api/categories
+Content-Type: application/json

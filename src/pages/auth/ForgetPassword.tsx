@@ -14,7 +14,7 @@ import {
     FieldLabel
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { Link, useNavigate } from "react-router-dom"
+import { Link, Navigate, useNavigate } from "react-router-dom"
 import { useState } from "react"
 import { motion } from "framer-motion"
 import { useMutation } from "@tanstack/react-query"
@@ -40,6 +40,21 @@ export default function ForgetPassword() {
         mutate({
             email
         })
+    }
+    const user = JSON.parse(localStorage.getItem("user"))
+
+    if (user) {
+        if (user.type === "admin") {
+            return <Navigate to="/admin" replace />
+        }
+        if (user.type === "advertiser") {
+            return <Navigate to="/advertiser" replace />
+        }
+        if (user.type === "user") {
+            return <Navigate to="/injera" replace />
+        }
+
+
     }
 
     return (

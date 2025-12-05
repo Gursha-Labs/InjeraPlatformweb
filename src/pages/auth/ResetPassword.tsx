@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import { useNavigate, useParams } from "react-router-dom"
+import { Navigate, useNavigate, useParams } from "react-router-dom"
 import { motion } from "framer-motion"
 import { useMutation } from "@tanstack/react-query"
 import { toast } from "sonner"
@@ -92,6 +92,21 @@ export default function ResetPassword() {
             password: formData.password,
             conformpassword: formData.confirmPassword,
         })
+    }
+    const user = JSON.parse(localStorage.getItem("user"))
+
+    if (user) {
+        if (user.type === "admin") {
+            return <Navigate to="/admin" replace />
+        }
+        if (user.type === "advertiser") {
+            return <Navigate to="/advertiser" replace />
+        }
+        if (user.type === "user") {
+            return <Navigate to="/injera" replace />
+        }
+
+
     }
 
     return (

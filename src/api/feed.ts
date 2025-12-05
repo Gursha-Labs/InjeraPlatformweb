@@ -1,3 +1,4 @@
+import { handleApiResponse } from "@/lib/handleApiResponse";
 import apiClient from "./apiClinet";
 
 import type { FetchAdsResponse, AdVideo } from "@/types/api/ad";
@@ -12,13 +13,15 @@ interface FetchVideosResult {
   hasMore: boolean;
 }
 
+export const postAdFeed = async (data) => {
+  return handleApiResponse(() => apiClient.post("/ads/upload", data));
+};
+
 export const fetchVideos = async ({
   pageParam = 1,
 }: FetchVideosParams): Promise<FetchVideosResult> => {
   try {
-    const res = await apiClient.get<FetchAdsResponse>(
-      `/feed?page=${pageParam}`
-    );
+    const res = await apiClient.get<FetchAdsResponse>(`/ads/feed`);
 
     const data = res.data;
     if (!data?.data) throw new Error("Invalid API response structure");

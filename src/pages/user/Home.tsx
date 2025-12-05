@@ -17,7 +17,7 @@ export default function Home() {
         queryFn: fetchVideos,
         initialPageParam: 1,
         getNextPageParam: (lastPage) =>
-            lastPage.hasMore ? lastPage.nextPage : undefined,
+            lastPage.has_more ? lastPage.nextPage : undefined,
     });
 
     const [activeIndex, setActiveIndex] = useState(0);
