@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
     MessageCircle,
@@ -24,6 +24,8 @@ import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
 import ShareDialog from "./ShareDialog";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { addVidoeFinshed, fetchUserPoints, postComment } from "@/api/feed";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface VideoCardProps {
     v: AdVideo;
@@ -33,6 +35,25 @@ interface VideoCardProps {
 
 export function VideoCard({ v, index, activeIndex }: VideoCardProps) {
     const videoRef = useRef<HTMLVideoElement | null>(null);
+    const queryClient = useQueryClient()
+    const { mutate, isPending } = useMutation({
+        mutationFn: postComment,
+        mutationKey: ["postComment"],
+        onSuccess: () => {
+
+            queryClient.invalidateQueries({ queryKey: ["videos"] })
+        }
+    })
+    const [comment, setComment] = useState("")
+    const { data, isLoading } = useQuery({
+        queryKey: ["fetchUserPoints"],
+        queryFn: fetchUserPoints,
+        refetchInterval: 2000
+    })
+    const handleSendComment = () => {
+        if (comment == "") return
+        mutate({ comment: comment, videoid: v.id })
+    }
 
     useEffect(() => {
         const video = videoRef.current;
@@ -45,6 +66,9 @@ export function VideoCard({ v, index, activeIndex }: VideoCardProps) {
             video.currentTime = 0;
         }
     }, [index, activeIndex]);
+    const handleVideoFinish = async () => {
+        await addVidoeFinshed(v.id)
+    }
 
     return (
         <div
@@ -64,7 +88,8 @@ export function VideoCard({ v, index, activeIndex }: VideoCardProps) {
                     src={`https://pub-7fa68a27c9094c06b1a9403bec80db5a.r2.dev/${v.video_url}`}
                     className="h-full w-full object-cover"
                     playsInline
-                    muted
+
+                    onEnded={handleVideoFinish}
                 />
 
                 {/* 🔥 Gradient Overlays */}
@@ -80,7 +105,7 @@ export function VideoCard({ v, index, activeIndex }: VideoCardProps) {
                             className="flex items-center gap-2 bg-white/20 backdrop-blur-md shadow-lg px-4 py-1.5 rounded-full"
                         >
                             <Coins className="w-4 h-4 text-yellow-300" />
-                            <span className="text-sm font-semibold text-white">500</span>
+                            <span className="text-sm font-semibold text-white">{isLoading ? <>Loading</> : data?.points}</span>
                         </motion.div>
 
                         {/* Advertiser */}
@@ -131,18 +156,18 @@ export function VideoCard({ v, index, activeIndex }: VideoCardProps) {
                 {/* Action Buttons */}
                 <div className="absolute right-5 bottom-28 flex flex-col gap-6 items-center z-20">
                     <Sheet>
-                        <SheetTrigger asChild>
+                        <SheetTrigger >
                             <ActionButton icon={<MessageCircle />} label="Comments" />
                         </SheetTrigger>
                         <SheetContent>
                             <SheetTitle>Comments ({v.comment_count})</SheetTitle>
                             <SheetDescription>
-                                Share your thoughts...
+                                {v.comments.map((comment) => comment.comment)}
                             </SheetDescription>
                             <SheetFooter>
                                 <div className="flex justify-between items-center w-full">
-                                    <Textarea placeholder="Write a comment..." className="flex-grow" />
-                                    <Button variant="secondary" size="icon" className="ml-3">
+                                    <Textarea placeholder="Write a comment..." className="flex-grow" onChange={(e) => setComment(e.target.value)} value={comment} />
+                                    <Button variant="secondary" size="icon" className="ml-3" onClick={handleSendComment} disabled={isPending}>
                                         <SendIcon />
                                     </Button>
                                 </div>
