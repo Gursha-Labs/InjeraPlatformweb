@@ -1,7 +1,7 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { VideoCard } from "@/components/user/VideoCard";
-import { fetchVideos } from "@/api/feed";
+import { fetchAdFeed } from "@/api/feed";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
@@ -14,11 +14,12 @@ export default function Home() {
         status,
     } = useInfiniteQuery({
         queryKey: ["videos"],
-        queryFn: fetchVideos,
         initialPageParam: 1,
+        queryFn: ({ pageParam }) => fetchAdFeed({ pageParam }),
         getNextPageParam: (lastPage) =>
             lastPage.has_more ? lastPage.nextPage : undefined,
     });
+
 
     const [activeIndex, setActiveIndex] = useState(0);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -39,7 +40,9 @@ export default function Home() {
         return () => observer.disconnect();
     }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-    const allVideos = data?.pages.flatMap((page) => page.videos) || [];
+    const allVideos =
+        data?.pages.flatMap((page) => page.data) || [];
+
     if (status === "pending")
         return (
             <div className="flex flex-col gap-4 items-center justify-center h-screen bg-background text-foreground">

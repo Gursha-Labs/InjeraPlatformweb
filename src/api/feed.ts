@@ -1,40 +1,19 @@
 import { handleApiResponse } from "@/lib/handleApiResponse";
 import apiClient from "./apiClinet";
 
-import type { FetchAdsResponse, AdVideo } from "@/types/api/ad";
+import type { FetchAdsResponse } from "@/types/api/ad";
+import type { AdVideo } from "@/types/models/adVideo";
 
-interface FetchVideosParams {
-  pageParam?: number;
-}
-
-interface FetchVideosResult {
-  videos: AdVideo[];
-  nextPage: number;
-  hasMore: boolean;
-}
-
-export const postAdFeed = async (data) => {
+export const postAdFeed = async (data: AdVideo) => {
   return handleApiResponse(() => apiClient.post("/ads/upload", data));
 };
 
-export const fetchVideos = async ({
-  pageParam = 1,
-}: FetchVideosParams): Promise<FetchVideosResult> => {
-  try {
-    const res = await apiClient.get<FetchAdsResponse>(`/ads/feed`);
-
-    const data = res.data;
-    if (!data?.data) throw new Error("Invalid API response structure");
-
-    return {
-      videos: data.data,
-      nextPage: data.hasNextPage ? pageParam + 1 : pageParam,
-      hasMore: data.hasNextPage,
-    };
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-      throw new Error(err.message);
-    }
-    throw new Error(String(err));
-  }
+export const fetchAdFeed = async ({ pageParam = 1 }) => {
+  return handleApiResponse<FetchAdsResponse>(() =>
+    apiClient.get("/ads/feed", {
+      params: {
+        page: pageParam,
+      },
+    })
+  );
 };

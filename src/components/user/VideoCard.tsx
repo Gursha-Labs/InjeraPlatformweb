@@ -2,7 +2,6 @@ import { useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
     MessageCircle,
-
     Coins,
     Search,
     BookmarkPlus,
@@ -24,22 +23,17 @@ import { AdvertiserHoverCard } from "./AdvertiserHoverCard";
 import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
 import ShareDialog from "./ShareDialog";
 import { Link } from "react-router-dom";
-
+import { motion } from "framer-motion";
 
 interface VideoCardProps {
-    v: AdVideo
+    v: AdVideo;
     index: number;
     activeIndex: number;
 }
 
-export function VideoCard({
-    v,
-    index,
-    activeIndex,
-}: VideoCardProps) {
+export function VideoCard({ v, index, activeIndex }: VideoCardProps) {
     const videoRef = useRef<HTMLVideoElement | null>(null);
-    console.log(v)
-    const points = 500
+
     useEffect(() => {
         const video = videoRef.current;
         if (!video) return;
@@ -52,81 +46,102 @@ export function VideoCard({
         }
     }, [index, activeIndex]);
 
-
-
-    const myCallback = () => (console.log('Video has ended'));
-
     return (
         <div
             className={cn(
-                "relative h-screen w-full sm:w-[40%] mx-auto flex items-center justify-center snap-center",
-                "bg-background text-foreground"
+                "relative h-screen w-full sm:w-[40%] mx-auto flex items-center justify-center snap-center"
             )}
         >
-            {/* Video Container */}
-            <div className="relative h-full w-full rounded-2xl overflow-hidden">
+            <motion.div
+                initial={{ opacity: 0.7, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4 }}
+                className="relative h-full w-full rounded-2xl overflow-hidden shadow-xl"
+            >
+                {/* Video */}
                 <video
                     ref={videoRef}
-                    src={v.video_url}
+                    src={`https://pub-7fa68a27c9094c06b1a9403bec80db5a.r2.dev/${v.video_url}`}
                     className="h-full w-full object-cover"
-                    onEnded={() => myCallback()}
                     playsInline
+                    muted
                 />
 
-                {/* Overlay gradient */}
-                <div className="absolute inset-0  pointer-events-none" />
+                {/* 🔥 Gradient Overlays */}
+                <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/10 to-black/70 z-10" />
 
-                {/* --- Top Info Bar --- */}
-                <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-20">
-                    {/* ---info about the adveritser--- */}
+                {/* ⭐ Top Section */}
+                <div className="absolute top-5 left-5 right-5 flex items-start justify-between z-20">
                     <div>
-                        <div className="flex items-center gap-2 bg-muted/40 backdrop-blur-md px-3 py-1 rounded-full mb-2">
-                            <Coins className="w-4 h-4 text-yellow-400" />
-                            <span className="text-sm font-medium">{points}</span>
-                        </div>
+                        {/* Coins */}
+                        <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="flex items-center gap-2 bg-white/20 backdrop-blur-md shadow-lg px-4 py-1.5 rounded-full"
+                        >
+                            <Coins className="w-4 h-4 text-yellow-300" />
+                            <span className="text-sm font-semibold text-white">500</span>
+                        </motion.div>
 
-                        <div className="flex items-center gap-3">
-                            <Link to="/profile">
-                                <Avatar>
-                                    <AvatarImage src={v.advertiser?.avatar || "/placeholder-avatar.png"} />
-                                    <AvatarFallback>
-                                        {v.advertiser?.username?.charAt(0).toUpperCase() || "U"}
-                                    </AvatarFallback>
+                        {/* Advertiser */}
+                        <motion.div
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.1 }}
+                            className="flex items-center gap-3 mt-3"
+                        >
+                            <Link to={`/injera/profile/${v.advertiser.id}`}>
+                                <Avatar className="ring-2 ring-white/80 shadow">
+                                    <AvatarImage src={v.advertiser.avatar} />
+                                    <AvatarFallback>{v.advertiser.username?.charAt(0).toUpperCase()}</AvatarFallback>
                                 </Avatar>
                             </Link>
 
                             <AdvertiserHoverCard v={v} />
-                        </div>
+                        </motion.div>
                     </div>
 
                     {/* Search Button */}
-                    <div className="p-2 rounded-full bg-muted/10 backdrop-blur hover:bg-muted/20 cursor-pointer transition">
-                        <Link to="/search"><Search className="w-5 h-5" /></Link>
-                    </div>
+                    <motion.div
+                        initial={{ opacity: 0, x: 10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                    >
+                        <Link
+                            to="/injera/search"
+                            className="p-2 rounded-full bg-white/20 backdrop-blur-md shadow hover:bg-white/30 transition"
+                        >
+                            <Search className="w-5 h-5 text-white" />
+                        </Link>
+                    </motion.div>
                 </div>
-                {/* -----tag section */}
-                <div className="absolute bottom-16 left-5 max-w-[80%] z-10">
-                    <h3 className="text-lg font-semibold">@{v.advertiser?.username}</h3>
-                    <p className="text-sm text-muted-foreground">
-                        {
-                            v.tags.map((el) => el)
-                        }
+
+                {/* 🔖 Tags + Title */}
+                <motion.div
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.15 }}
+                    className="absolute bottom-20 left-5 max-w-[80%] text-white z-20"
+                >
+                    <h2 className="text-lg font-semibold drop-shadow-md">{v.title}</h2>
+                    <p className="text-xs text-gray-200 drop-shadow">
+                        {v.tags.map((tag) => tag.name).join(" · ")}
                     </p>
-                </div>
-                {/* actions section  */}
-                <div className="absolute right-5 bottom-24 flex flex-col gap-5 items-center z-10">
+                </motion.div>
+
+                {/* Action Buttons */}
+                <div className="absolute right-5 bottom-28 flex flex-col gap-6 items-center z-20">
                     <Sheet>
                         <SheetTrigger asChild>
                             <ActionButton icon={<MessageCircle />} label="Comments" />
                         </SheetTrigger>
                         <SheetContent>
-                            <SheetTitle>Comment Section</SheetTitle>
+                            <SheetTitle>Comments ({v.comment_count})</SheetTitle>
                             <SheetDescription>
-                                melat benatsh dekika chemrilgn , melat kfu nesh
+                                Share your thoughts...
                             </SheetDescription>
                             <SheetFooter>
-                                <div className="flex justify-between items-center">
-                                    <Textarea placeholder="Comment on the ad" />
+                                <div className="flex justify-between items-center w-full">
+                                    <Textarea placeholder="Write a comment..." className="flex-grow" />
                                     <Button variant="secondary" size="icon" className="ml-3">
                                         <SendIcon />
                                     </Button>
@@ -136,27 +151,36 @@ export function VideoCard({
                     </Sheet>
 
                     <ActionButton icon={<BookmarkPlus />} label="Save" />
-
                     <ShareDialog v={v} />
-
                     <ActionButton icon={<ExternalLink />} label="Visit" />
                 </div>
-            </div>
-        </div >
+            </motion.div>
+        </div>
     );
 }
 
-export function ActionButton({ icon, label }: { icon: React.ReactNode; label: string }) {
+export function ActionButton({
+    icon,
+    label,
+}: {
+    icon: React.ReactNode;
+    label: string;
+}) {
     return (
-        <div className="flex flex-col items-center">
+        <motion.div
+            initial={{ opacity: 0, scale: 0.85 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.2 }}
+            className="flex flex-col items-center"
+        >
             <Button
                 size="icon"
                 variant="secondary"
-                className="rounded-full bg-muted/10 hover:bg-muted/20 backdrop-blur"
+                className="rounded-full bg-white/20 text-white shadow backdrop-blur-md hover:bg-white/30 transition"
             >
                 {icon}
             </Button>
-            <span className="text-xs mt-1 text-foreground">{label}</span>
-        </div>
+            <span className="text-xs mt-1 text-white drop-shadow">{label}</span>
+        </motion.div>
     );
 }
