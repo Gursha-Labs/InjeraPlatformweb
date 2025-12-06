@@ -28,7 +28,6 @@ import {
 } from "@/components/ui/sidebar"
 import { useAppDispatch } from "@/store/hook"
 import { logout } from "@/store/slices/authSlice"
-import { Button } from "./ui/button"
 
 export function NavUser({
   user,
