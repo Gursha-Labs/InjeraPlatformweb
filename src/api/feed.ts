@@ -44,8 +44,23 @@ export const postComment = async ({
   videoid: string;
 }) => {
   return handleApiResponse(() =>
-    apiClient.post(` ads/${videoid}/comment`, {
+    apiClient.post(`/ads/${videoid}/comment`, {
       comment,
+    })
+  );
+};
+export const replytoComment = async ({
+  reply,
+  videoid,
+  commentid,
+}: {
+  reply: string;
+  videoid: string;
+  commentid: string;
+}) => {
+  return handleApiResponse(() =>
+    apiClient.post(`/ads/${videoid}/comments/${commentid}/reply`, {
+      reply,
     })
   );
 };
