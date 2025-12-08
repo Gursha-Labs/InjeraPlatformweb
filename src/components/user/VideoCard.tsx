@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
     MessageCircle,
@@ -6,17 +6,14 @@ import {
     Search,
     BookmarkPlus,
     ExternalLink,
-    SendIcon,
+
 } from "lucide-react";
 import {
     Sheet,
     SheetContent,
-    SheetDescription,
-    SheetFooter,
-    SheetTitle,
+
     SheetTrigger,
 } from "@/components/ui/sheet";
-import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import type { AdVideo } from "@/types/models/adVideo";
 import { AdvertiserHoverCard } from "./AdvertiserHoverCard";
@@ -24,8 +21,9 @@ import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
 import ShareDialog from "./ShareDialog";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { addVidoeFinshed, fetchUserPoints, postComment } from "@/api/feed";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { addVidoeFinshed, fetchUserPoints } from "@/api/feed";
+import { useQuery } from "@tanstack/react-query";
+import Comment from "./Comment";
 
 interface VideoCardProps {
     v: AdVideo;
@@ -35,25 +33,12 @@ interface VideoCardProps {
 
 export function VideoCard({ v, index, activeIndex }: VideoCardProps) {
     const videoRef = useRef<HTMLVideoElement | null>(null);
-    const queryClient = useQueryClient()
-    const { mutate, isPending } = useMutation({
-        mutationFn: postComment,
-        mutationKey: ["postComment"],
-        onSuccess: () => {
 
-            queryClient.invalidateQueries({ queryKey: ["videos"] })
-        }
-    })
-    const [comment, setComment] = useState("")
     const { data, isLoading } = useQuery({
         queryKey: ["fetchUserPoints"],
         queryFn: fetchUserPoints,
         refetchInterval: 2000
     })
-    const handleSendComment = () => {
-        if (comment == "") return
-        mutate({ comment: comment, videoid: v.id })
-    }
 
     useEffect(() => {
         const video = videoRef.current;
@@ -160,18 +145,7 @@ export function VideoCard({ v, index, activeIndex }: VideoCardProps) {
                             <ActionButton icon={<MessageCircle />} label="Comments" />
                         </SheetTrigger>
                         <SheetContent>
-                            <SheetTitle>Comments ({v.comment_count})</SheetTitle>
-                            <SheetDescription>
-                                {v.comments.map((comment) => comment.comment)}
-                            </SheetDescription>
-                            <SheetFooter>
-                                <div className="flex justify-between items-center w-full">
-                                    <Textarea placeholder="Write a comment..." className="flex-grow" onChange={(e) => setComment(e.target.value)} value={comment} />
-                                    <Button variant="secondary" size="icon" className="ml-3" onClick={handleSendComment} disabled={isPending}>
-                                        <SendIcon />
-                                    </Button>
-                                </div>
-                            </SheetFooter>
+                            <Comment v={v} />
                         </SheetContent>
                     </Sheet>
 
