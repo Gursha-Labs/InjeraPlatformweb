@@ -2,8 +2,8 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { VideoCard } from "@/components/user/VideoCard";
 import { fetchAdFeed } from "@/api/feed";
-import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { Loading } from "@/components/Loading";
 
 export default function Home() {
     const {
@@ -46,8 +46,7 @@ export default function Home() {
     if (status === "pending")
         return (
             <div className="flex flex-col gap-4 items-center justify-center h-screen bg-background text-foreground">
-                <Skeleton className="w-40 h-6" />
-                <p className="text-sm text-muted-foreground">Loading videos...</p>
+                <Loading />
             </div>
         );
 

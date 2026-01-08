@@ -85,8 +85,8 @@ export default function Signup() {
             type: data.type,
         })
     }
-
-    const user = JSON.parse(localStorage.getItem("user"))
+    const storeddata = localStorage.getItem("user")
+    const user = JSON.parse(storeddata)
 
     if (user) {
         if (user.type === "admin") {
@@ -197,7 +197,7 @@ export default function Signup() {
                                             Create Account
                                         </Button>
                                         <FieldDescription className="text-center">
-                                            Already have an account? <Link to="/login">Sign in</Link>
+                                            Already have an account? <Link to="/">Sign in</Link>
                                         </FieldDescription>
                                     </Field>
                                 </FieldGroup>
