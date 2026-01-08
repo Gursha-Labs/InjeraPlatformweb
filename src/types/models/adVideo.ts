@@ -35,5 +35,8 @@ export type AdVideo = {
   category: Category;
   tags: Tags[];
   is_active: boolean;
-  comments: Comment[] | [];
+};
+
+export type Comments = {
+  id: string;
 };

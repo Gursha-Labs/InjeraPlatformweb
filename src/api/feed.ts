@@ -35,6 +35,30 @@ export const fetchUserPoints = async () => {
     apiClient.get("/user/points")
   );
 };
+export const fetchAdcomment = async ({
+  adid,
+  page = 1,
+}: {
+  adid: string;
+  page: number;
+}) => {
+  return handleApiResponse(() =>
+    apiClient.get(`/ads/${adid}/comments?page=${page}`)
+  );
+};
+export const fetchAdcommentreply = async ({
+  adid,
+  commentId,
+  page = 1,
+}: {
+  adid: string;
+  commentId: string;
+  page?: number;
+}) => {
+  return handleApiResponse(() =>
+    apiClient.get(`/ads/${adid}/comments/${commentId}/replies?page=${page}`)
+  );
+};
 
 export const postComment = async ({
   comment,
