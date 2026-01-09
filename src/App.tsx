@@ -27,6 +27,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Index from "./pages/advertizer/Index";
 import UploadAd from "./pages/advertizer/UploadAd";
 import Setting from "./pages/user/Setting";
+import Search from "./pages/user/Search";
 
 function App() {
   const dispatch = useAppDispatch();
@@ -51,7 +52,7 @@ function App() {
         <Route element={<ProtectedRoute types={["user"]} />} >
           <Route path="/injera" element={<RootLayout />}>
             <Route index element={<Home />} />
-            <Route path="search" element={<>search</>} />
+            <Route path="search" element={<Search />} />
             <Route path="game" element={<>games</>} />
             <Route path="setting" element={<Setting />} />
             <Route path="profile" element={<Profile />} />

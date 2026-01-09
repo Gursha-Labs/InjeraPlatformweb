@@ -37,6 +37,4 @@ export type AdVideo = {
   is_active: boolean;
 };
 
-export type Comments = {
-  id: string;
-};
+
