@@ -27,6 +27,11 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Index from "./pages/advertizer/Index";
 import UploadAd from "./pages/advertizer/UploadAd";
 import Setting from "./pages/user/Setting";
+import Search from "./pages/user/Search";
+import Game from "./pages/user/Game";
+import AdvertiserAd from "./pages/advertizer/AdvertiserAd";
+import AdvertiserAddetail from "./pages/advertizer/AdvertiserAddetail";
+import AdvertiserProfile from "./pages/advertizer/AdvertiserProfile";
 
 function App() {
   const dispatch = useAppDispatch();
@@ -51,10 +56,11 @@ function App() {
         <Route element={<ProtectedRoute types={["user"]} />} >
           <Route path="/injera" element={<RootLayout />}>
             <Route index element={<Home />} />
-            <Route path="search" element={<>search</>} />
-            <Route path="game" element={<>games</>} />
+
+            <Route path="search" element={<Search />} />
+            <Route path="game" element={<Game />} />
             <Route path="setting" element={<Setting />} />
-            <Route path="profile" element={<Profile />} />
+            <Route path="profile/:id" element={<Profile />} />
           </Route>
         </Route>
 
@@ -63,7 +69,15 @@ function App() {
           <Route element={<ProtectedRoute types={["advertiser"]} />}>
             <Route path="/advertiser" element={<Page />} >
               <Route index element={<Index />} />
-              <Route path="uploadAd" element={<UploadAd />} />
+              <Route path="advideo" element={<AdvertiserAd />} />
+              <Route path="advideo/:id" element={<AdvertiserAddetail />} />
+              <Route path="orders" element={<UploadAd />} />
+              <Route path="wallet" element={<UploadAd />} />
+              <Route path="advideo/create" element={<UploadAd />} />
+              <Route path="analytics" element={<UploadAd />} />
+              <Route path="reports" element={<UploadAd />} />
+              <Route path="help" element={<UploadAd />} />
+              <Route path="settings" element={<AdvertiserProfile />} />
             </Route>
           </Route>
 

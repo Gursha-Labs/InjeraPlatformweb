@@ -14,6 +14,16 @@ import {
   type Icon as TablerIcon
 } from "@tabler/icons-react"
 
+// Import additional icons for new menu items
+import {
+  IconBriefcase,
+  IconTrendingUp,
+  IconWallet,
+  IconBell,
+  IconBuilding,
+  IconShoppingCart
+} from "@tabler/icons-react"
+
 import { NavDocuments } from "@/components/nav-documents"
 import { NavMain, type NavMainItem } from "@/components/nav-main"
 import { NavSecondary } from "@/components/nav-secondary"
@@ -60,7 +70,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const data: {
     user: SidebarUser
     navMain: NavMainItem[]
-    documents: DocumentItem[]
+    documents?: DocumentItem[]
     navSecondary: SecondaryItem[]
   } = {
     user: {
@@ -70,27 +80,32 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
     },
 
     navMain: [
-      { title: "Upload Ad", url: "/advertiser/uploadad", icon: IconListDetails },
-      { title: "Lifecycle", url: "/advertiser/lifecycle", icon: IconListDetails },
+      { title: "Overview", url: "/advertiser", icon: IconInnerShadowTop },
+      { title: "Ad Videos", url: "/advertiser/advideo", icon: IconBriefcase },
+      { title: "Create Ad Video", url: "/advertiser/advideo/create", icon: IconListDetails },
       { title: "Analytics", url: "/advertiser/analytics", icon: IconChartBar },
-      { title: "Projects", url: "/advertiser/projects", icon: IconFolder },
-      { title: "Team", url: "/advertiser/team", icon: IconUsers },
+      { title: "Orders", url: "/advertiser/orders", icon: IconShoppingCart },
+      { title: "Wallet", url: "/advertiser/wallet", icon: IconWallet },
+      { title: "Settings", url: "/advertiser/settings", icon: IconSettings },
     ],
 
-    documents: [
-      { name: "Data Library", url: "/advertiser/data", icon: IconDatabase },
-      { name: "Reports", url: "/advertiser/reports", icon: IconReport },
-      { name: "Word Assistant", url: "/advertiser/word", icon: IconFileWord },
-    ],
+   
 
     navSecondary: [
-      { title: "Settings", url: "/advertiser/settings", icon: IconSettings },
-      { title: "Get Help", url: "/help", icon: IconHelp },
-      { title: "Search", url: "/search", icon: IconSearch },
+      { title: "Get Help", url: "/advertiser/help", icon: IconHelp },
     ],
   }
 
- 
+  // Helper function to check if a path is active
+  const isActive = (url: string) => {
+    // Exact match for overview
+    if (url === "/advertiser") {
+      return pathname === "/advertiser" || pathname === "/advertiser/";
+    }
+    // For nested routes, check if pathname starts with the url
+    return pathname.startsWith(url);
+  };
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -107,19 +122,45 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
 
       <SidebarContent>
-        <NavMain
-          items={data.navMain.map((item) => ({
-            ...item,
-            isActive: pathname.startsWith(item.url),
-          }))}
-        />
+        {/* Main Navigation */}
+        <div className="space-y-1">
+          <NavMain
+            items={data.navMain.map((item) => ({
+              ...item,
+              isActive: isActive(item.url),
+            }))}
+          />
+        </div>
 
-        <NavDocuments items={data.documents} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        {/* Documents/Secondary Navigation */}
+        {/* <div className="mt-8">
+          <NavDocuments
+            items={data.documents.map((item) => ({
+              ...item,
+              isActive: isActive(item.url),
+            }))}
+          />
+        </div> */}
+
+        {/* Bottom Help Section */}
+        <div className="mt-auto">
+          <NavSecondary
+            items={data.navSecondary.map((item) => ({
+              ...item,
+              isActive: isActive(item.url),
+            }))}
+          />
+        </div>
       </SidebarContent>
 
       <SidebarFooter>
-        {loading ? <>loading ...</> : <NavUser user={data.user} />}
+        {loading ? (
+          <div className="flex items-center justify-center p-4">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+          </div>
+        ) : (
+          <NavUser user={data.user} />
+        )}
       </SidebarFooter>
     </Sidebar>
   )

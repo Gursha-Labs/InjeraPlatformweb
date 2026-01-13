@@ -88,10 +88,7 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <IconUserCircle />
-                Account
-              </DropdownMenuItem>
+
               <DropdownMenuItem>
                 <IconCreditCard />
                 Billing
