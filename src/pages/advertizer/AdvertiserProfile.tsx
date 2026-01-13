@@ -729,13 +729,7 @@ export default function AdvertiserProfile() {
                                         <div className="space-y-4">
                                             <div className="space-y-2">
                                                 <Label htmlFor="username">Username</Label>
-                                                {isEditing ? (
-                                                    <Input
-                                                        id="username"
-                                                        value={editData.username || ''}
-                                                        onChange={(e) => handleInputChange('username', e.target.value)}
-                                                    />
-                                                ) : (
+                                                {(
                                                     <div className="flex items-center gap-2 p-2 px-3 rounded-lg border bg-muted/50">
                                                         <span className="font-medium">{data.username}</span>
                                                     </div>
@@ -744,19 +738,12 @@ export default function AdvertiserProfile() {
 
                                             <div className="space-y-2">
                                                 <Label htmlFor="email">Email Address</Label>
-                                                {isEditing ? (
-                                                    <Input
-                                                        id="email"
-                                                        type="email"
-                                                        value={editData.email || ''}
-                                                        onChange={(e) => handleInputChange('email', e.target.value)}
-                                                    />
-                                                ) : (
+                                                {
                                                     <div className="flex items-center gap-2 p-2 px-3 rounded-lg border bg-muted/50">
                                                         <Mail className="w-4 h-4" />
                                                         <span>{data.email}</span>
                                                     </div>
-                                                )}
+                                                }
                                             </div>
 
                                             <div className="space-y-2">
