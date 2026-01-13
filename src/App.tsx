@@ -32,6 +32,8 @@ import Game from "./pages/user/Game";
 import AdvertiserAd from "./pages/advertizer/AdvertiserAd";
 import AdvertiserAddetail from "./pages/advertizer/AdvertiserAddetail";
 import AdvertiserProfile from "./pages/advertizer/AdvertiserProfile";
+import AdvertiserWallet from "./pages/advertizer/Wallet";
+import AdvertiserOrders from "./pages/advertizer/Order";
 
 function App() {
   const dispatch = useAppDispatch();
@@ -71,8 +73,8 @@ function App() {
               <Route index element={<Index />} />
               <Route path="advideo" element={<AdvertiserAd />} />
               <Route path="advideo/:id" element={<AdvertiserAddetail />} />
-              <Route path="orders" element={<UploadAd />} />
-              <Route path="wallet" element={<UploadAd />} />
+              <Route path="orders" element={<AdvertiserOrders />} />
+              <Route path="wallet" element={<AdvertiserWallet />} />
               <Route path="advideo/create" element={<UploadAd />} />
               <Route path="analytics" element={<UploadAd />} />
               <Route path="reports" element={<UploadAd />} />
