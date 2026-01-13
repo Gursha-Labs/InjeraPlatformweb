@@ -30,14 +30,14 @@ export default function ResetPassword() {
         password: "",
         confirmPassword: "",
     })
-
+    console.log(formData)
     const [errors, setErrors] = useState<Record<string, string>>({})
 
     const { mutate, isPending } = useMutation({
         mutationFn: resetPassword,
         onSuccess: (data) => {
             toast.success(data.message)
-            navigate("/login")
+            navigate("/")
         },
         onError: (err) => {
             toast.error(err.message || "Something went wrong")
@@ -90,7 +90,7 @@ export default function ResetPassword() {
             email,
             otp: formData.otp,
             password: formData.password,
-            conformpassword: formData.confirmPassword,
+            password_confirmation: formData.confirmPassword,
         })
     }
     const user = JSON.parse(localStorage.getItem("user"))

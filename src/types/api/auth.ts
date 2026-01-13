@@ -37,7 +37,7 @@ export interface RegisterErrorResponse {
 }
 export interface ResetPasswordParam {
   password: string;
-  conformpassword: string;
+  password_confirmation: string;
   otp: string;
   email: string;
 }
