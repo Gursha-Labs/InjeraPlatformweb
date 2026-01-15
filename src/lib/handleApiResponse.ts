@@ -26,7 +26,7 @@ export async function handleApiResponse<T>(
         "An unknown error occurred.";
       if (error.response?.status === 401) {
         localStorage.removeItem("token");
-        window.location.href = "/login";
+        window.location.href = "/";
       }
       throw new Error(serverMessage);
     }

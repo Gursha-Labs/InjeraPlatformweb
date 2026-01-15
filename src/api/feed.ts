@@ -13,11 +13,11 @@ export const postAdFeed = async (data: FormData) => {
   );
 };
 
-export const fetchAdFeed = async ({ pageParam = 1 }) => {
+export const fetchAdFeed = async ({ cursor }: { cursor: string }) => {
   return handleApiResponse<FetchAdsResponse>(() =>
     apiClient.get("/ads/feed", {
       params: {
-        page: pageParam,
+        cursor: cursor,
       },
     })
   );

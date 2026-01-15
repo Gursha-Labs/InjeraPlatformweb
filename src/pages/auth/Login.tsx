@@ -36,8 +36,11 @@ export default function Login() {
             else if (data.user.type === "advertiser") {
                 navigate("/advertiser")
             }
-            else {
+            else if (data.user.type === "admin") {
                 navigate("/admin")
+            }
+            else {
+                navigate("/")
             }
         },
         onError: (err) => {
