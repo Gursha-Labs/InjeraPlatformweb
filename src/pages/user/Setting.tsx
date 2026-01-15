@@ -308,7 +308,7 @@ export default function Setting() {
                                 <div className="flex flex-col items-center space-y-4">
                                     <Avatar className="h-32 w-32 border-4 border-background shadow-lg">
                                         <AvatarImage
-                                            src={editedData.profile_picture_preview || `http://localhost:8000/storage/app/public/profiles${profile.profile_picture}` || ''}
+                                            src={editedData.profile_picture_preview || `${import.meta.env.VITE_PHOTO_BASE}${profile.profile_picture}` || ''}
                                         />
                                         <AvatarFallback className="text-2xl bg-gradient-to-br from-primary to-secondary text-primary-foreground">
                                             {getInitials()}

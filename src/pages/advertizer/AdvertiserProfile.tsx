@@ -284,7 +284,7 @@ export default function AdvertiserProfile() {
     const getImageUrl = (imagePath: string | null) => {
         if (!imagePath) return ''
         if (imagePath.startsWith('http')) return imagePath
-        return `http://localhost:8000/${imagePath}`
+        return `${import.meta.env.VITE_PHOTO_BASE}${imagePath}`
     }
 
     return (
