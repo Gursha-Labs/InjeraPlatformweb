@@ -30,44 +30,67 @@ export default function Setting() {
     })
 
     // Update user profile mutation
+    // Update the mutation to handle file upload errors
     const updateProfileMutation = useMutation({
         mutationFn: updateUserProfile,
         onMutate: async (newData) => {
             // Cancel any outgoing refetches
-            await queryClient.cancelQueries({ queryKey: ["fetchuserprofile"] })
+            await queryClient.cancelQueries({ queryKey: ["fetchuserprofile"] });
 
             // Snapshot the previous value
-            const previousData = queryClient.getQueryData(["fetchuserprofile"])
+            const previousData = queryClient.getQueryData(["fetchuserprofile"]);
 
             // Optimistically update to the new value
+            // For files, use the preview URL temporarily
             queryClient.setQueryData(["fetchuserprofile"], (old: any) => ({
                 ...old,
                 profile: {
                     ...old?.profile,
-                    ...newData
+                    ...newData,
+                    // If there's a file, use the preview URL temporarily
+                    profile_picture: newData.profile_picture instanceof File
+                        ? editedData.profile_picture_preview
+                        : newData.profile_picture
                 }
-            }))
+            }));
 
-            return { previousData }
+            return { previousData };
         },
         onError: (err, newData, context) => {
             // Rollback on error
-            queryClient.setQueryData(["fetchuserprofile"], context?.previousData)
+            queryClient.setQueryData(["fetchuserprofile"], context?.previousData);
+
+            const errorMessage = err instanceof Error
+                ? err.message
+                : "Failed to update profile. Please try again.";
+
             toast.error("Update failed", {
-                description: "Failed to update profile. Please try again.",
-            })
+                description: errorMessage,
+            });
         },
-        onSuccess: () => {
+        onSuccess: (data) => {
             toast.success("Profile updated", {
                 description: "Your profile has been updated successfully.",
-            })
-            setIsEditing(false)
+            });
+            setIsEditing(false);
+
+            // Force refetch to get the actual image URL from backend
+            queryClient.invalidateQueries({ queryKey: ["fetchuserprofile"] });
         },
         onSettled: () => {
             // Refetch to ensure we have fresh data
-            queryClient.invalidateQueries({ queryKey: ["fetchuserprofile"] })
+            queryClient.invalidateQueries({ queryKey: ["fetchuserprofile"] });
         },
-    })
+    });
+    // Add cleanup effect for object URLs
+    useEffect(() => {
+        return () => {
+            // Cleanup any object URLs to prevent memory leaks
+            if (editedData.profile_picture_preview) {
+                URL.revokeObjectURL(editedData.profile_picture_preview);
+            }
+        };
+    }, [editedData.profile_picture_preview]);
 
     // Initialize edited data when profile data loads
     useEffect(() => {
@@ -82,18 +105,28 @@ export default function Setting() {
             [field]: value
         }))
     }
-
     const handleSave = () => {
         // Prepare data for update
         const updatePayload: Record<string, any> = {};
 
         Object.entries(editedData).forEach(([key, value]) => {
-            // Skip fields that shouldn't be sent or are unchanged
+            // Skip preview fields and unchanged values
+            if (['profile_picture_preview'].includes(key)) {
+                return;
+            }
+
+            // Skip system fields
             if (['id', 'user_id', 'created_at', 'updated_at', 'last_active_at'].includes(key)) {
                 return;
             }
 
-            // Only send if value has changed from original
+            // For file uploads, always send the file
+            if (key === 'profile_picture' && value instanceof File) {
+                updatePayload[key] = value;
+                return;
+            }
+
+            // For other fields, only send if changed
             const originalValue = profileData?.profile?.[key];
             if (value !== originalValue) {
                 updatePayload[key] = value;
@@ -114,6 +147,14 @@ export default function Setting() {
         updateProfileMutation.mutate(updatePayload, {
             onSettled: () => {
                 toast.dismiss(toastId);
+            },
+            onSuccess: () => {
+                // Clear the preview URL after successful upload
+                setEditedData(prev => {
+                    const newData = { ...prev };
+                    delete newData.profile_picture_preview;
+                    return newData;
+                });
             }
         });
     };
@@ -266,7 +307,9 @@ export default function Setting() {
                                 {/* Avatar */}
                                 <div className="flex flex-col items-center space-y-4">
                                     <Avatar className="h-32 w-32 border-4 border-background shadow-lg">
-                                        <AvatarImage src={editedData.profile_picture || ''} />
+                                        <AvatarImage
+                                            src={editedData.profile_picture_preview || `http://localhost:8000/storage/app/public/profiles${profile.profile_picture}` || ''}
+                                        />
                                         <AvatarFallback className="text-2xl bg-gradient-to-br from-primary to-secondary text-primary-foreground">
                                             {getInitials()}
                                         </AvatarFallback>
@@ -480,6 +523,7 @@ export default function Setting() {
                                                     placeholder="Male/Female/Other"
                                                 />
                                             </div>
+
                                             <div className="space-y-2">
                                                 <Label htmlFor="profilePicture">Profile Picture</Label>
                                                 <div className="flex items-center gap-3">
@@ -487,30 +531,53 @@ export default function Setting() {
                                                         id="profilePicture"
                                                         type="file"
                                                         accept="image/*"
+                                                        // In the Profile Picture input section, change:
                                                         onChange={(e) => {
                                                             const file = e.target.files?.[0];
                                                             if (file) {
-                                                                // Create a preview URL
-                                                                const previewUrl = URL.createObjectURL(file);
-                                                                // Store both the file and preview URL
+                                                                // Check file size (limit to 5MB)
+                                                                if (file.size > 5 * 1024 * 1024) {
+                                                                    toast.error("File too large", {
+                                                                        description: "Profile picture must be less than 5MB.",
+                                                                    });
+                                                                    return;
+                                                                }
+
+                                                                // Check file type
+                                                                if (!file.type.startsWith('image/')) {
+                                                                    toast.error("Invalid file type", {
+                                                                        description: "Please upload an image file.",
+                                                                    });
+                                                                    return;
+                                                                }
+
+                                                                // Store the file with the correct field name for backend
                                                                 handleInputChange('profile_picture', file);
-                                                                // You might want to store the preview separately
-                                                                // For immediate display
+
+                                                                // Create preview for immediate display
+                                                                const previewUrl = URL.createObjectURL(file);
+                                                                // Store preview separately
+                                                                setEditedData(prev => ({
+                                                                    ...prev,
+                                                                    profile_picture_preview: previewUrl
+                                                                }));
                                                             }
                                                         }}
                                                         disabled={!isEditing}
                                                         className="cursor-pointer"
                                                     />
-                                                    {editedData.profile_picture && (
+                                                    {editedData.profile_picture_preview && (
                                                         <div className="h-16 w-16 rounded-full overflow-hidden border">
                                                             <img
-                                                                src={
-                                                                    editedData.profile_picture instanceof File
-                                                                        ? URL.createObjectURL(editedData.profile_picture)
-                                                                        : editedData.profile_picture
-                                                                }
+                                                                src={editedData.profile_picture_preview}
                                                                 alt="Profile preview"
                                                                 className="h-full w-full object-cover"
+                                                                onLoad={(e) => {
+                                                                    // Revoke the object URL after the image loads to free memory
+                                                                    if (editedData.profile_picture instanceof File) {
+                                                                        URL.revokeObjectURL(e.currentTarget.src);
+                                                                    }
+                                                                }}
                                                             />
                                                         </div>
                                                     )}

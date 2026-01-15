@@ -34,6 +34,14 @@ import AdvertiserAddetail from "./pages/advertizer/AdvertiserAddetail";
 import AdvertiserProfile from "./pages/advertizer/AdvertiserProfile";
 import AdvertiserWallet from "./pages/advertizer/Wallet";
 import AdvertiserOrders from "./pages/advertizer/Order";
+import AdminPage from "./pages/admin/AdminPage";
+import AdminOverview from "./pages/admin/AdminOverview";
+import Users from "./pages/admin/Users";
+import Advertisers from "./pages/admin/Advertisers";
+import Trafic from "./pages/admin/Trafic";
+import AdminSetting from "./pages/admin/AdminSetting";
+import Money from "./pages/admin/Money";
+import Log from "./pages/admin/Log";
 
 function App() {
   const dispatch = useAppDispatch();
@@ -86,7 +94,19 @@ function App() {
         </Route>
 
         {/* Admin Route */}
-        <Route path="/admin" element={<>admin page</>} />
+        <Route>
+          <Route element={<ProtectedRoute types={["admin"]} />}>
+            <Route path="/admin" element={<AdminPage />} >
+              <Route index element={<AdminOverview />} />
+              <Route path="advertisers" element={<Advertisers />} />
+              <Route path="users" element={<Users />} />
+              <Route path="trafic" element={<Trafic />} />
+              <Route path="money" element={<Money />} />
+              <Route path="log" element={<Log />} />
+              <Route path="settings" element={<AdminSetting />} />
+            </Route>
+          </Route>
+        </Route>
       </Routes>
 
       <Toaster position="top-center" expand={true} richColors />
