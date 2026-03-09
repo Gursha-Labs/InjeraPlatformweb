@@ -38,7 +38,7 @@ import AdminPage from "./pages/admin/AdminPage";
 import AdminOverview from "./pages/admin/AdminOverview";
 import Users from "./pages/admin/Users";
 import Advertisers from "./pages/admin/Advertisers";
-import Trafic from "./pages/admin/Trafic";
+import Traffic from "./pages/admin/Trafic";
 import AdminSetting from "./pages/admin/AdminSetting";
 import Money from "./pages/admin/Money";
 import Log from "./pages/admin/Log";
@@ -68,7 +68,7 @@ function App() {
             <Route index element={<Home />} />
 
             <Route path="search" element={<Search />} />
-            <Route path="game" element={<Game />} />
+            <Route path="game" element={<Game />}  />
             <Route path="setting" element={<Setting />} />
             <Route path="profile/:id" element={<Profile />} />
           </Route>
@@ -100,7 +100,7 @@ function App() {
               <Route index element={<AdminOverview />} />
               <Route path="advertisers" element={<Advertisers />} />
               <Route path="users" element={<Users />} />
-              <Route path="trafic" element={<Trafic />} />
+              <Route path="trafic" element={<Traffic />} />
               <Route path="money" element={<Money />} />
               <Route path="log" element={<Log />} />
               <Route path="settings" element={<AdminSetting />} />
