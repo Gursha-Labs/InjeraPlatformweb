@@ -85,7 +85,7 @@ export function AdminSideBar(props: React.ComponentProps<typeof Sidebar>) {
       { title: "Users", url: "/admin/users", icon: IconListDetails },
       { title: "Trafic", url: "/admin/trafic", icon: IconShoppingCart },
       { title: "Wallet", url: "/admin/money", icon: IconWallet },
-      { title: "Log", url: "/admin/log", icon: IconSettings },
+      { title: "Variables", url: "/admin/log", icon: IconSettings },
     ],
 
 

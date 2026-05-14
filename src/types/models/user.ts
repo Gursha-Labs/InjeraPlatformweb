@@ -3,7 +3,7 @@ export type User = {
   username: string;
   email?: string;
   avatar?: string;
-  type: "admin" | "user" | "advertiser";
+  type: "admin" | "user" | "advertiser" | "payment_processor";
   website_url?: string;
 };
 export interface UserType {

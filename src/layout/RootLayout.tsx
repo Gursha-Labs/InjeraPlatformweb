@@ -1,11 +1,13 @@
+import FloatingNav from "@/components/FloatingNav";
 import Navbar from "@/components/Navbar";
-import React from "react";
 import { Outlet } from "react-router-dom";
 
 export default function RootLayout() {
     return (
         <div className="min-h-screen flex bg-background text-foreground">
             {/* Desktop Sidebar Navbar */}
+            <FloatingNav />
+
             <header className="hidden lg:block fixed left-0 top-0 h-full z-50">
                 <Navbar />
             </header>

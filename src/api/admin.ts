@@ -17,3 +17,22 @@ export const blockUser = ({ userid }: { userid: string }) => {
 export const unblockUser = ({ userid }: { userid: string }) => {
   return handleApiResponse(() => apiClient.get(`/unblock-user/${userid}`));
 };
+const analyticsEndpoints = {
+  overview: "/analytics/overview",
+  topEndpoints: "/analytics/top-endpoints",
+  topEndpointsMethod: "/analytics/top-endpoints-method",
+  traffic: "/analytics/traffic",
+  avgResponse: "/analytics/avg-response",
+  errors: "/analytics/errors",
+  slowEndpoints: "/analytics/slow-endpoints",
+};
+
+export const fetchAnalytics = (key: keyof typeof analyticsEndpoints) => {
+  return handleApiResponse(() => apiClient.get(analyticsEndpoints[key]));
+};
+export const assignrole = async (data: { userId: string; role: string }) => {
+  const { userId, role } = data;
+  return handleApiResponse(() =>
+    apiClient.post(`/assign-role/${userId}`, { role }),
+  );
+};

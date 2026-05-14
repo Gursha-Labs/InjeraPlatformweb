@@ -1,4 +1,4 @@
-import { fetchusers, blockUser, unblockUser } from '@/api/admin';
+import { fetchusers, blockUser, unblockUser, assignrole } from '@/api/admin';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import React, { useState } from 'react';
 import {
@@ -17,6 +17,9 @@ import {
     DropdownMenuItem,
     DropdownMenuLabel,
     DropdownMenuSeparator,
+    DropdownMenuSub,
+    DropdownMenuSubContent,
+    DropdownMenuSubTrigger,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
@@ -80,6 +83,19 @@ export default function Users() {
         queryKey: ["fetchusers", currentPage, pageSize],
         queryFn: () => fetchusers({ page: currentPage, limit: pageSize }),
     });
+    const { mutate: assignRoleMutate, isPending } = useMutation({
+        mutationFn: ({ userId, role }: { userId: string; role: string }) =>
+            assignrole({ userId, role }),
+        mutationKey: ["assignrole"],
+        onSuccess: (data) => {
+            toast.success(data.message);
+            queryClient.invalidateQueries({ queryKey: ["fetchusers"] });
+
+        },
+        onError: (error) => {
+            toast.error(error.message);
+        }
+    });
 
     const blockMutation = useMutation({
         mutationFn: blockUser,
@@ -133,6 +149,8 @@ export default function Users() {
                 return 'Admin';
             case 'advertiser':
                 return 'Advertiser';
+            case 'payment_processor':
+                return "Payment Processor";
             default:
                 return 'User';
         }
@@ -537,23 +555,38 @@ export default function Users() {
                                             <TableCell className="text-right">
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                                            <span className="sr-only">Open menu</span>
+                                                        <Button variant="ghost" className="h-8 w-8 p-0">
                                                             <MoreHorizontal className="h-4 w-4" />
                                                         </Button>
                                                     </DropdownMenuTrigger>
+
                                                     <DropdownMenuContent align="end" className="w-48">
                                                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                                         <DropdownMenuSeparator />
-                                                        <DropdownMenuItem>
-                                                            <Eye className="h-4 w-4 mr-2" />
-                                                            View Details
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem>
-                                                            <Mail className="h-4 w-4 mr-2" />
-                                                            Send Email
-                                                        </DropdownMenuItem>
+
+                                                        {/* 🔥 Assign Role */}
+                                                        <DropdownMenuSub>
+                                                            <DropdownMenuSubTrigger>
+                                                                Assign Role
+                                                            </DropdownMenuSubTrigger>
+
+                                                            <DropdownMenuSubContent>
+                                                                {["admin", "payment_processor"].map((role) => (
+                                                                    <DropdownMenuItem
+                                                                        key={role}
+                                                                        onClick={() =>
+                                                                            assignRoleMutate({ userId: user.id, role })
+                                                                        }
+                                                                        disabled={isPending}
+                                                                    >
+                                                                        {role}
+                                                                    </DropdownMenuItem>
+                                                                ))}
+                                                            </DropdownMenuSubContent>
+                                                        </DropdownMenuSub>
+
                                                         <DropdownMenuSeparator />
+
                                                         {!user.is_blocking ? (
                                                             <DropdownMenuItem
                                                                 className="text-destructive focus:text-destructive"
