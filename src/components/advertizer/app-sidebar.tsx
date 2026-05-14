@@ -84,8 +84,8 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       { title: "Ad Videos", url: "/advertiser/advideo", icon: IconBriefcase },
       { title: "Create Ad Video", url: "/advertiser/advideo/create", icon: IconListDetails },
       // { title: "Analytics", url: "/advertiser/analytics", icon: IconChartBar },
-      { title: "Orders", url: "/advertiser/orders", icon: IconShoppingCart },
-      { title: "Wallet", url: "/advertiser/wallet", icon: IconWallet },
+      // { title: "Orders", url: "/advertiser/orders", icon: IconShoppingCart },
+      // { title: "Wallet", url: "/advertiser/wallet", icon: IconWallet },
       { title: "Settings", url: "/advertiser/settings", icon: IconSettings },
     ],
 

@@ -39,6 +39,9 @@ export default function Login() {
             else if (data.user.type === "admin") {
                 navigate("/admin")
             }
+            else if (data.user.type === "payment_processor") {
+                navigate("/paymentprocess")
+            }
             else {
                 navigate("/")
             }

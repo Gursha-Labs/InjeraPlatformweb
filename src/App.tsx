@@ -32,7 +32,6 @@ import Game from "./pages/user/Game";
 import AdvertiserAd from "./pages/advertizer/AdvertiserAd";
 import AdvertiserAddetail from "./pages/advertizer/AdvertiserAddetail";
 import AdvertiserProfile from "./pages/advertizer/AdvertiserProfile";
-import AdvertiserWallet from "./pages/advertizer/Wallet";
 import AdvertiserOrders from "./pages/advertizer/Order";
 import AdminPage from "./pages/admin/AdminPage";
 import AdminOverview from "./pages/admin/AdminOverview";
@@ -42,6 +41,10 @@ import Traffic from "./pages/admin/Trafic";
 import AdminSetting from "./pages/admin/AdminSetting";
 import Money from "./pages/admin/Money";
 import Log from "./pages/admin/Log";
+import PaymentProcess from "./pages/paymentprocessor/PaymentProcess";
+import PaymentProcessDetail from "./pages/paymentprocessor/PaymentProcessDetail";
+import { PaymentProcessSidebar } from "./components/paymentprocess/app-sidebar";
+import PaymnetPage from "./pages/paymentprocessor/PaymentPage";
 
 function App() {
   const dispatch = useAppDispatch();
@@ -82,7 +85,7 @@ function App() {
               <Route path="advideo" element={<AdvertiserAd />} />
               <Route path="advideo/:id" element={<AdvertiserAddetail />} />
               <Route path="orders" element={<AdvertiserOrders />} />
-              <Route path="wallet" element={<AdvertiserWallet />} />
+              {/* <Route path="wallet" element={<AdvertiserWallet />} /> */}
               <Route path="advideo/create" element={<UploadAd />} />
               <Route path="analytics" element={<UploadAd />} />
               <Route path="reports" element={<UploadAd />} />
@@ -104,6 +107,14 @@ function App() {
               <Route path="money" element={<Money />} />
               <Route path="log" element={<Log />} />
               <Route path="settings" element={<AdminSetting />} />
+            </Route>
+          </Route>
+        </Route>
+        <Route>
+          <Route element={<ProtectedRoute types={["payment_processor"]} />}>
+            <Route path="/paymentprocess" element={<PaymnetPage />} >
+              <Route index element={<PaymentProcess />} />
+              <Route path=":id" element={<PaymentProcessDetail />} />
             </Route>
           </Route>
         </Route>

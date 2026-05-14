@@ -1,3 +1,4 @@
+/*eslint-disable*/
 import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -15,7 +16,19 @@ import {
   Tablet,
   Monitor,
   RefreshCw,
-  Activity
+  Activity,
+  Zap,
+  AlertCircle,
+  CheckCircle2,
+  Server,
+  Database,
+  Wallet,
+  Gamepad2,
+  Award,
+  User,
+  RotateCw,
+  Video,
+  Layers
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -38,91 +51,30 @@ import {
 } from 'recharts'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Progress } from '@/components/ui/progress'
+import { useQuery } from '@tanstack/react-query'
+import { fetchAnalytics } from '@/api/admin'
 
-// Dummy data for traffic analytics
-const dailyTraffic = [
-  { hour: '00:00', visitors: 120, pageviews: 450, engagement: 68 },
-  { hour: '02:00', visitors: 80, pageviews: 320, engagement: 45 },
-  { hour: '04:00', visitors: 65, pageviews: 280, engagement: 38 },
-  { hour: '06:00', visitors: 150, pageviews: 520, engagement: 72 },
-  { hour: '08:00', visitors: 320, pageviews: 890, engagement: 85 },
-  { hour: '10:00', visitors: 450, pageviews: 1250, engagement: 92 },
-  { hour: '12:00', visitors: 520, pageviews: 1450, engagement: 88 },
-  { hour: '14:00', visitors: 480, pageviews: 1380, engagement: 84 },
-  { hour: '16:00', visitors: 420, pageviews: 1150, engagement: 79 },
-  { hour: '18:00', visitors: 380, pageviews: 980, engagement: 82 },
-  { hour: '20:00', visitors: 280, pageviews: 750, engagement: 76 },
-  { hour: '22:00', visitors: 180, pageviews: 580, engagement: 68 },
-]
+// Helper function to format date
+const formatDate = (dateStr: string) => {
+  const date = new Date(dateStr)
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
 
-const weeklyTraffic = [
-  { day: 'Mon', users: 2450, sessions: 3120, bounce: 32, avgDuration: '4:12' },
-  { day: 'Tue', users: 2670, sessions: 3450, bounce: 28, avgDuration: '4:45' },
-  { day: 'Wed', users: 2890, sessions: 3780, bounce: 26, avgDuration: '5:02' },
-  { day: 'Thu', users: 3050, sessions: 4120, bounce: 24, avgDuration: '5:18' },
-  { day: 'Fri', users: 3450, sessions: 4560, bounce: 22, avgDuration: '5:45' },
-  { day: 'Sat', users: 3780, sessions: 4980, bounce: 25, avgDuration: '6:12' },
-  { day: 'Sun', users: 4120, sessions: 5230, bounce: 27, avgDuration: '6:45' },
-]
+// Helper to format response time
+const formatResponseTime = (seconds: number) => {
+  if (seconds < 1) return `${(seconds * 1000).toFixed(0)}ms`
+  return `${seconds.toFixed(2)}s`
+}
 
-const monthlyTraffic = [
-  { month: 'Jan', users: 12500, videos: 1560, orders: 345, points: 12500 },
-  { month: 'Feb', users: 13800, videos: 1780, orders: 389, points: 14500 },
-  { month: 'Mar', users: 15600, videos: 1950, orders: 412, points: 16700 },
-  { month: 'Apr', users: 17200, videos: 2150, orders: 456, points: 18900 },
-  { month: 'May', users: 18900, videos: 2340, orders: 489, points: 21200 },
-  { month: 'Jun', users: 20500, videos: 2560, orders: 523, points: 23500 },
-  { month: 'Jul', users: 22300, videos: 2780, orders: 567, points: 25800 },
-  { month: 'Aug', users: 24500, videos: 3050, orders: 612, points: 28500 },
-]
-
-const deviceTraffic = [
-  { device: 'Mobile', value: 65, color: '#8884d8' },
-  { device: 'Desktop', value: 25, color: '#82ca9d' },
-  { device: 'Tablet', value: 10, color: '#ffc658' },
-]
-
-const trafficSources = [
-  { source: 'Direct', visitors: 15400, percentage: 45, change: '+12.5%' },
-  { source: 'Social Media', visitors: 8900, percentage: 26, change: '+18.2%' },
-  { source: 'Search', visitors: 6700, percentage: 20, change: '+8.4%' },
-  { source: 'Referral', visitors: 3400, percentage: 9, change: '-2.3%' },
-]
-
-const activeHours = [
-  { hour: '8 AM', activeUsers: 1250, peak: true },
-  { hour: '9 AM', activeUsers: 1560, peak: false },
-  { hour: '10 AM', activeUsers: 1890, peak: false },
-  { hour: '11 AM', activeUsers: 1780, peak: false },
-  { hour: '12 PM', activeUsers: 1560, peak: false },
-  { hour: '1 PM', activeUsers: 1450, peak: false },
-  { hour: '2 PM', activeUsers: 1670, peak: false },
-  { hour: '3 PM', activeUsers: 1890, peak: false },
-  { hour: '4 PM', activeUsers: 2010, peak: false },
-  { hour: '5 PM', activeUsers: 1950, peak: false },
-  { hour: '6 PM', activeUsers: 1780, peak: false },
-  { hour: '7 PM', activeUsers: 1560, peak: false },
-  { hour: '8 PM', activeUsers: 1340, peak: false },
-  { hour: '9 PM', activeUsers: 1120, peak: false },
-  { hour: '10 PM', activeUsers: 890, peak: false },
-]
-
-const topPages = [
-  { page: 'Video Feed', views: 45620, avgTime: '5:45', bounce: '18%' },
-  { page: 'User Profile', views: 23450, avgTime: '3:20', bounce: '24%' },
-  { page: 'Order Page', views: 17890, avgTime: '2:45', bounce: '32%' },
-  { page: 'Gamification', views: 15670, avgTime: '4:15', bounce: '22%' },
-  { page: 'Advertiser Dashboard', views: 13450, avgTime: '8:30', bounce: '12%' },
-]
-
-const CustomTooltip = ({ active, payload, label }: any) => {
+// Custom Tooltip for charts
+const CustomTooltip = ({ active, payload, label, unit = 'requests' }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-background border rounded-lg p-3 shadow-lg">
-        <p className="font-medium">{label}</p>
-        {payload.map((entry: any, index: number) => (
-          <p key={index} className="text-sm" style={{ color: entry.color }}>
-            {entry.name}: {entry.value}
+      <div className="bg-background border border-border rounded-lg shadow-lg p-3">
+        <p className="font-semibold text-sm">{label}</p>
+        {payload.map((p: any, idx: number) => (
+          <p key={idx} className="text-sm" style={{ color: p.color }}>
+            {p.name}: {p.value.toLocaleString()} {unit}
           </p>
         ))}
       </div>
@@ -131,514 +83,618 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null
 }
 
-export default function Traffic() {
-  const [timeRange, setTimeRange] = React.useState('weekly')
-  const [activeTab, setActiveTab] = React.useState('overview')
+// Stat Card Component
+const StatCard = ({ title, value, description, icon: Icon, trend, trendValue, color = "blue", isLoading }: any) => {
+  const colorClasses = {
+    blue: "from-blue-500/10 to-blue-600/5 border-blue-500/20",
+    green: "from-green-500/10 to-green-600/5 border-green-500/20",
+    orange: "from-orange-500/10 to-orange-600/5 border-orange-500/20",
+    purple: "from-purple-500/10 to-purple-600/5 border-purple-500/20",
+    red: "from-red-500/10 to-red-600/5 border-red-500/20",
+    cyan: "from-cyan-500/10 to-cyan-600/5 border-cyan-500/20",
+  }
+
+  const iconColors = {
+    blue: "text-blue-500",
+    green: "text-green-500",
+    orange: "text-orange-500",
+    purple: "text-purple-500",
+    red: "text-red-500",
+    cyan: "text-cyan-500",
+  }
 
   return (
-    <div className="p-6 space-y-6">
+    <Card className={`bg-gradient-to-br ${colorClasses[color]} border backdrop-blur-sm overflow-hidden`}>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
+        <Icon className={`h-5 w-5 ${iconColors[color]}`} />
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div className="h-8 w-24 bg-muted animate-pulse rounded" />
+        ) : (
+          <>
+            <div className="text-2xl font-bold">{typeof value === 'number' ? value.toLocaleString() : value}</div>
+            <p className="text-xs text-muted-foreground mt-1">{description}</p>
+            {trend && (
+              <div className="flex items-center gap-1 mt-2">
+                {trend === 'up' ? (
+                  <TrendingUp className="h-3 w-3 text-green-500" />
+                ) : (
+                  <TrendingDown className="h-3 w-3 text-red-500" />
+                )}
+                <span className={`text-xs ${trend === 'up' ? 'text-green-500' : 'text-red-500'}`}>
+                  {trendValue}
+                </span>
+              </div>
+            )}
+          </>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
+// Endpoint icon mapper
+const getEndpointIcon = (endpoint: string) => {
+  if (endpoint.includes('wallet')) return <Wallet className="h-4 w-4" />
+  if (endpoint.includes('game')) return <Gamepad2 className="h-4 w-4" />
+  if (endpoint.includes('points')) return <Award className="h-4 w-4" />
+  if (endpoint.includes('me') || endpoint.includes('profile')) return <User className="h-4 w-4" />
+  if (endpoint.includes('spin')) return <RotateCw className="h-4 w-4" />
+  if (endpoint.includes('video')) return <Video className="h-4 w-4" />
+  return <Activity className="h-4 w-4" />
+}
+
+export default function Traffic() {
+  // Fetch all analytics data
+  const { data: overview, isLoading: overviewLoading } = useQuery({
+    queryKey: ["analytics", "overview"],
+    queryFn: () => fetchAnalytics("overview"),
+  })
+
+  const { data: topEndpoints, isLoading: topEndpointsLoading } = useQuery({
+    queryKey: ["analytics", "top-endpoints"],
+    queryFn: () => fetchAnalytics("topEndpoints"),
+  })
+
+  const { data: topEndpointsMethod, isLoading: topEndpointsMethodLoading } = useQuery({
+    queryKey: ["analytics", "top-endpoints-method"],
+    queryFn: () => fetchAnalytics("topEndpointsMethod"),
+  })
+
+  const { data: traffic, isLoading: trafficLoading } = useQuery({
+    queryKey: ["analytics", "traffic"],
+    queryFn: () => fetchAnalytics("traffic"),
+  })
+
+  const { data: avgResponse, isLoading: avgResponseLoading } = useQuery({
+    queryKey: ["analytics", "avg-response"],
+    queryFn: () => fetchAnalytics("avgResponse"),
+  })
+
+  const { data: errors, isLoading: errorsLoading } = useQuery({
+    queryKey: ["analytics", "errors"],
+    queryFn: () => fetchAnalytics("errors"),
+  })
+
+  const { data: slowEndpoints, isLoading: slowEndpointsLoading } = useQuery({
+    queryKey: ["analytics", "slow-endpoints"],
+    queryFn: () => fetchAnalytics("slowEndpoints"),
+  })
+
+  // Prepare traffic data for charts (format dates)
+  const trafficData = React.useMemo(() => {
+    if (!traffic) return []
+    return traffic.map((item: any) => ({
+      ...item,
+      formattedDate: formatDate(item.date),
+      displayDate: item.date
+    }))
+  }, [traffic])
+
+  // Calculate totals for pie chart (GET vs POST)
+  const methodStats = React.useMemo(() => {
+    if (!topEndpointsMethod) return { get: 0, post: 0 }
+    const getTotal = topEndpointsMethod
+      .filter((item: any) => item.method === 'GET')
+      .reduce((sum: number, item: any) => sum + item.total_requests, 0)
+    const postTotal = topEndpointsMethod
+      .filter((item: any) => item.method === 'POST')
+      .reduce((sum: number, item: any) => sum + item.total_requests, 0)
+    return [
+      { name: 'GET', value: getTotal, color: '#10b981' },
+      { name: 'POST', value: postTotal, color: '#f59e0b' }
+    ]
+  }, [topEndpointsMethod])
+  const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899']
+
+  // Calculate request distribution for pie chart
+  const endpointDistribution = React.useMemo(() => {
+    if (!topEndpoints) return []
+    return topEndpoints.slice(0, 6).map((item: any, idx: number) => ({
+      name: item.endpoint.split('/').pop(),
+      value: item.total_requests,
+      color: COLORS[idx % COLORS.length]
+    }))
+  }, [topEndpoints])
+
+
+  const isLoading = overviewLoading || topEndpointsLoading || trafficLoading || avgResponseLoading || topEndpointsMethodLoading || slowEndpointsLoading
+
+
+  if (isLoading) return <div>Loading</div>
+  return (
+    <div className="space-y-6 p-6 bg-background min-h-screen">
       {/* Header */}
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Traffic Analytics</h1>
-            <p className="text-muted-foreground">
-              Monitor platform traffic, user behavior, and engagement metrics
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Select value={timeRange} onValueChange={setTimeRange}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select range" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="daily">Last 24 Hours</SelectItem>
-                <SelectItem value="weekly">Last 7 Days</SelectItem>
-                <SelectItem value="monthly">Last 30 Days</SelectItem>
-                <SelectItem value="quarterly">Last Quarter</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button variant="outline" size="sm">
-              <Download className="h-4 w-4 mr-2" />
-              Export
-            </Button>
-            <Button variant="outline" size="sm">
-              <RefreshCw className="h-4 w-4" />
-            </Button>
-          </div>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Analytics Dashboard</h1>
+          <p className="text-muted-foreground mt-1">
+            Monitor your API traffic, performance metrics, and user activity
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="gap-1">
+            <Activity className="h-3 w-3" />
+            Live
+          </Badge>
+          <Button variant="outline" size="sm">
+            <Download className="h-4 w-4 mr-2" />
+            Export
+          </Button>
+          <Button variant="outline" size="sm">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
         </div>
       </div>
 
-      {/* Quick Stats */}
+      {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Users</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">3,450</div>
-            <div className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-green-500" />
-              <p className="text-xs text-muted-foreground">
-                <span className="text-green-500">+12.5%</span> from yesterday
-              </p>
-            </div>
-            <div className="mt-2 text-xs text-muted-foreground">
-              Real-time active sessions
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Page Views</CardTitle>
-            <Eye className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">12.5K</div>
-            <div className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-green-500" />
-              <p className="text-xs text-muted-foreground">
-                <span className="text-green-500">+8.2%</span> from yesterday
-              </p>
-            </div>
-            <div className="mt-2 text-xs text-muted-foreground">
-              Total views in last 24h
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg. Session</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">5:24</div>
-            <div className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-green-500" />
-              <p className="text-xs text-muted-foreground">
-                <span className="text-green-500">+2.1%</span> from yesterday
-              </p>
-            </div>
-            <div className="mt-2 text-xs text-muted-foreground">
-              Average session duration
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Bounce Rate</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">24.5%</div>
-            <div className="flex items-center gap-2">
-              <TrendingDown className="h-4 w-4 text-green-500" />
-              <p className="text-xs text-muted-foreground">
-                <span className="text-green-500">-3.2%</span> from yesterday
-              </p>
-            </div>
-            <div className="mt-2 text-xs text-muted-foreground">
-              Percentage of quick exits
-            </div>
-          </CardContent>
-        </Card>
+        <StatCard
+          title="Total Requests"
+          value={overview?.total_requests || 0}
+          description="All time API requests"
+          icon={Eye}
+          trend="up"
+          trendValue="+12% from last week"
+          color="blue"
+          isLoading={overviewLoading}
+        />
+        <StatCard
+          title="Today's Requests"
+          value={overview?.today_requests || 0}
+          description="Requests in the last 24 hours"
+          icon={Calendar}
+          color="green"
+          isLoading={overviewLoading}
+        />
+        <StatCard
+          title="Avg Response Time"
+          value={formatResponseTime(overview?.avg_response_time || 0)}
+          description="Average API response time"
+          icon={Clock}
+          trend={overview?.avg_response_time < 0.5 ? 'down' : 'up'}
+          trendValue={overview?.avg_response_time < 0.5 ? 'Excellent' : 'Needs improvement'}
+          color="cyan"
+          isLoading={overviewLoading}
+        />
+        <StatCard
+          title="Error Rate"
+          value={errors?.error_rate_percent === 0 ? '0%' : `${errors?.error_rate_percent}%`}
+          description="Requests with errors"
+          icon={AlertCircle}
+          color="green"
+          isLoading={errorsLoading}
+        />
       </div>
 
-      {/* Main Content */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Left Column - Charts */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Main Traffic Chart */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Traffic Overview</CardTitle>
-                  <CardDescription>
-                    {timeRange === 'daily' ? 'Hourly traffic for last 24 hours' :
-                      timeRange === 'weekly' ? 'Weekly traffic trends' :
-                        'Monthly traffic growth'}
-                  </CardDescription>
-                </div>
-                <Tabs defaultValue="users" className="w-[300px]">
-                  <TabsList>
-                    <TabsTrigger value="users">Users</TabsTrigger>
-                    <TabsTrigger value="sessions">Sessions</TabsTrigger>
-                    <TabsTrigger value="engagement">Engagement</TabsTrigger>
-                  </TabsList>
-                </Tabs>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart
-                    data={timeRange === 'daily' ? dailyTraffic :
-                      timeRange === 'weekly' ? weeklyTraffic : monthlyTraffic}
-                    margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                    <XAxis
-                      dataKey={timeRange === 'daily' ? 'hour' :
-                        timeRange === 'weekly' ? 'day' : 'month'}
-                      stroke="#6b7280"
-                    />
-                    <YAxis stroke="#6b7280" />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Legend />
-                    <Area
-                      type="monotone"
-                      dataKey={timeRange === 'daily' ? 'visitors' :
-                        timeRange === 'weekly' ? 'users' : 'users'}
-                      stroke="#8884d8"
-                      fill="#8884d8"
-                      fillOpacity={0.3}
-                      name={timeRange === 'daily' ? 'Visitors' :
-                        timeRange === 'weekly' ? 'Users' : 'Monthly Users'}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey={timeRange === 'daily' ? 'pageviews' :
-                        timeRange === 'weekly' ? 'sessions' : 'videos'}
-                      stroke="#82ca9d"
-                      fill="#82ca9d"
-                      fillOpacity={0.3}
-                      name={timeRange === 'daily' ? 'Page Views' :
-                        timeRange === 'weekly' ? 'Sessions' : 'Videos'}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
+      <Tabs defaultValue="overview" className="space-y-4">
+        <TabsList className="grid w-full max-w-md grid-cols-4">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="endpoints">Endpoints</TabsTrigger>
+          <TabsTrigger value="performance">Performance</TabsTrigger>
+          <TabsTrigger value="traffic">Traffic</TabsTrigger>
+        </TabsList>
 
-          {/* Active Hours & Devices */}
-          <div className="grid gap-6 md:grid-cols-2">
-            {/* Active Hours */}
-            <Card>
+        {/* Overview Tab */}
+        <TabsContent value="overview" className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            {/* Traffic Trend Chart */}
+            <Card className="col-span-1 md:col-span-2">
               <CardHeader>
-                <CardTitle>Peak Active Hours</CardTitle>
-                <CardDescription>User activity by hour of day</CardDescription>
+                <CardTitle>Traffic Overview</CardTitle>
+                <CardDescription>Daily API request volume over time</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-64">
+                <div className="h-[350px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={activeHours}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                      <XAxis dataKey="hour" stroke="#6b7280" />
-                      <YAxis stroke="#6b7280" />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Bar
-                        dataKey="activeUsers"
-                        fill="#8884d8"
-                        name="Active Users"
-                        radius={[4, 4, 0, 0]}
+                    <AreaChart data={trafficData}>
+                      <defs>
+                        <linearGradient id="colorRequests" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                          <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                      <XAxis
+                        dataKey="formattedDate"
+                        stroke="#888888"
+                        fontSize={12}
+                        tickLine={false}
+                        axisLine={false}
                       />
+                      <YAxis
+                        stroke="#888888"
+                        fontSize={12}
+                        tickLine={false}
+                        axisLine={false}
+                        tickFormatter={(value) => `${value}`}
+                      />
+                      <Tooltip content={<CustomTooltip unit="requests" />} />
+                      <Area
+                        type="monotone"
+                        dataKey="total_requests"
+                        stroke="#3b82f6"
+                        strokeWidth={2}
+                        fill="url(#colorRequests)"
+                        name="Requests"
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Request Distribution */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Request Distribution</CardTitle>
+                <CardDescription>Top endpoints by volume</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={endpointDistribution}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={90}
+                        paddingAngle={2}
+                        dataKey="value"
+                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        labelLine={false}
+                      >
+                        {endpointDistribution.map((entry: any, index: number) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* GET vs POST */}
+            <Card>
+              <CardHeader>
+                <CardTitle>HTTP Methods</CardTitle>
+                <CardDescription>GET vs POST request breakdown</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={methodStats}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={90}
+                        dataKey="value"
+                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      >
+                        {methodStats.map((entry: any, index: number) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* Endpoints Tab */}
+        <TabsContent value="endpoints" className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            {/* Top Endpoints Bar Chart */}
+            <Card className="col-span-1 md:col-span-2">
+              <CardHeader>
+                <CardTitle>Most Requested Endpoints</CardTitle>
+                <CardDescription>Top 10 endpoints by request volume</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[400px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={topEndpoints}
+                      layout="vertical"
+                      margin={{ top: 5, right: 30, left: 100, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                      <XAxis type="number" stroke="#888888" fontSize={12} />
+                      <YAxis
+                        type="category"
+                        dataKey="endpoint"
+                        stroke="#888888"
+                        fontSize={12}
+                        tickFormatter={(value) => value.split('/').pop()}
+                        width={100}
+                      />
+                      <Tooltip />
+                      <Bar dataKey="total_requests" fill="#3b82f6" radius={[0, 4, 4, 0]} name="Requests" />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Device Distribution */}
-            <Card>
+            {/* Endpoints with Methods Table */}
+            <Card className="col-span-1 md:col-span-2">
               <CardHeader>
-                <CardTitle>Device Distribution</CardTitle>
-                <CardDescription>Traffic by device type</CardDescription>
+                <CardTitle>Endpoint Details</CardTitle>
+                <CardDescription>Complete breakdown with HTTP methods</CardDescription>
               </CardHeader>
-              <CardContent className="flex flex-col items-center">
-                <div className="h-56 w-56">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={deviceTraffic}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={(entry) => `${entry.device}: ${entry.value}%`}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                        nameKey="device"
-                      >
-                        {deviceTraffic.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip content={<CustomTooltip />} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-                <div className="flex gap-4 mt-4">
-                  {deviceTraffic.map((device, index) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <div
-                        className="h-3 w-3 rounded-full"
-                        style={{ backgroundColor: device.color }}
-                      />
-                      <span className="text-sm">{device.device}</span>
-                      <span className="text-sm font-semibold">{device.value}%</span>
-                    </div>
-                  ))}
+              <CardContent>
+                <div className="rounded-md border">
+                  <div className="grid grid-cols-12 gap-4 p-4 bg-muted/50 font-medium text-sm">
+                    <div className="col-span-6">Endpoint</div>
+                    <div className="col-span-2">Method</div>
+                    <div className="col-span-2 text-right">Requests</div>
+                    <div className="col-span-2 text-right">% of Total</div>
+                  </div>
+                  <div className="divide-y">
+                    {topEndpointsMethod?.slice(0, 15).map((item: any, idx: number) => {
+                      const percentage = ((item.total_requests / (overview?.total_requests || 1)) * 100).toFixed(1)
+                      return (
+                        <div key={idx} className="grid grid-cols-12 gap-4 p-4 text-sm items-center hover:bg-muted/30 transition-colors">
+                          <div className="col-span-6 font-mono text-xs flex items-center gap-2">
+                            {getEndpointIcon(item.endpoint)}
+                            {item.endpoint}
+                          </div>
+                          <div className="col-span-2">
+                            <Badge variant={item.method === 'GET' ? 'default' : 'secondary'} className="text-xs">
+                              {item.method}
+                            </Badge>
+                          </div>
+                          <div className="col-span-2 text-right font-semibold">
+                            {item.total_requests.toLocaleString()}
+                          </div>
+                          <div className="col-span-2 text-right text-muted-foreground">
+                            {percentage}%
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
                 </div>
               </CardContent>
             </Card>
           </div>
-        </div>
+        </TabsContent>
 
-        {/* Right Column - Details */}
-        <div className="space-y-6">
-          {/* Traffic Sources */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Traffic Sources</CardTitle>
-              <CardDescription>Where your visitors come from</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {trafficSources.map((source, index) => (
-                <div key={index} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Globe className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium">{source.source}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold">{source.visitors.toLocaleString()}</span>
-                      <Badge variant={source.change.startsWith('+') ? "default" : "destructive"}>
-                        {source.change}
-                      </Badge>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Progress value={source.percentage} className="h-2 flex-1" />
-                    <span className="text-sm text-muted-foreground">{source.percentage}%</span>
-                  </div>
+        {/* Performance Tab */}
+        <TabsContent value="performance" className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            {/* Slow Endpoints */}
+            <Card className="col-span-1 md:col-span-2">
+              <CardHeader>
+                <CardTitle>Slowest Endpoints</CardTitle>
+                <CardDescription>Endpoints with highest average response time</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[400px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={slowEndpoints}
+                      layout="vertical"
+                      margin={{ top: 5, right: 30, left: 120, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                      <XAxis
+                        type="number"
+                        stroke="#888888"
+                        fontSize={12}
+                        tickFormatter={(value) => formatResponseTime(value)}
+                      />
+                      <YAxis
+                        type="category"
+                        dataKey="endpoint"
+                        stroke="#888888"
+                        fontSize={12}
+                        width={120}
+                      />
+                      <Tooltip
+                        formatter={(value: number) => formatResponseTime(value)}
+                        labelFormatter={(label) => `Endpoint: ${label}`}
+                      />
+                      <Bar dataKey="avg_time" fill="#ef4444" radius={[0, 4, 4, 0]} name="Avg Response Time">
+                        {slowEndpoints?.map((entry: any, index: number) => (
+                          <Cell key={`cell-${index}`} fill={entry.avg_time > 1 ? '#ef4444' : '#f59e0b'} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
                 </div>
-              ))}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          {/* Top Pages */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Top Pages</CardTitle>
-              <CardDescription>Most visited pages</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {topPages.map((page, index) => (
-                <div key={index} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">{page.page}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {page.views.toLocaleString()} views
+            {/* All Endpoints Performance */}
+            <Card className="col-span-1 md:col-span-2">
+              <CardHeader>
+                <CardTitle>All Endpoints Performance</CardTitle>
+                <CardDescription>Average response time by endpoint</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {avgResponse?.slice(0, 15).map((item: any, idx: number) => {
+                    const maxTime = Math.max(...(avgResponse?.map((i: any) => i.avg_time) || [1]))
+                    const percentage = (item.avg_time / maxTime) * 100
+                    const isSlow = item.avg_time > 1
+                    const isMedium = item.avg_time > 0.5
+                    return (
+                      <div key={idx} className="space-y-1">
+                        <div className="flex items-center justify-between text-sm">
+                          <div className="flex items-center gap-2 font-mono text-xs">
+                            {getEndpointIcon(item.endpoint)}
+                            {item.endpoint}
+                          </div>
+                          <span className={`font-semibold ${isSlow ? 'text-red-500' : isMedium ? 'text-yellow-500' : 'text-green-500'}`}>
+                            {formatResponseTime(item.avg_time)}
+                          </span>
+                        </div>
+                        <Progress
+                          value={percentage}
+                          className={`h-2 ${isSlow ? 'bg-red-500/20' : isMedium ? 'bg-yellow-500/20' : 'bg-green-500/20'}`}
+                          indicatorClassName={isSlow ? 'bg-red-500' : isMedium ? 'bg-yellow-500' : 'bg-green-500'}
+                        />
                       </div>
-                    </div>
+                    )
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* Traffic Tab */}
+        <TabsContent value="traffic" className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            {/* Detailed Traffic Chart */}
+            <Card className="col-span-1 md:col-span-2">
+              <CardHeader>
+                <CardTitle>Traffic Timeline</CardTitle>
+                <CardDescription>Detailed request volume over time</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[400px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={trafficData}>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                      <XAxis
+                        dataKey="formattedDate"
+                        stroke="#888888"
+                        fontSize={12}
+                        tickLine={false}
+                        axisLine={false}
+                      />
+                      <YAxis
+                        stroke="#888888"
+                        fontSize={12}
+                        tickLine={false}
+                        axisLine={false}
+                      />
+                      <Tooltip content={<CustomTooltip unit="requests" />} />
+                      <Legend />
+                      <Line
+                        type="monotone"
+                        dataKey="total_requests"
+                        stroke="#3b82f6"
+                        strokeWidth={2}
+                        dot={{ fill: '#3b82f6', r: 4 }}
+                        activeDot={{ r: 6 }}
+                        name="Daily Requests"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Traffic Summary */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Traffic Summary</CardTitle>
+                <CardDescription>Key metrics from traffic data</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Peak Day</span>
                     <div className="text-right">
-                      <div className="font-medium">{page.avgTime}</div>
+                      <div className="font-semibold">
+                        {trafficData?.reduce((max: any, item: any) =>
+                          item.total_requests > (max?.total_requests || 0) ? item : max, {}
+                        )?.formattedDate || 'N/A'}
+                      </div>
                       <div className="text-sm text-muted-foreground">
-                        Bounce: {page.bounce}
+                        {trafficData?.reduce((max: any, item: any) =>
+                          Math.max(max, item.total_requests), 0
+                        ).toLocaleString()} requests
                       </div>
                     </div>
                   </div>
-                  {index < topPages.length - 1 && (
-                    <div className="border-t" />
-                  )}
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          {/* Real-time Stats */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Real-time Statistics</CardTitle>
-              <CardDescription>Live platform metrics</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Smartphone className="h-4 w-4 text-blue-500" />
-                  <span className="text-sm">Mobile Users</span>
-                </div>
-                <div className="text-right">
-                  <div className="font-semibold">2,245</div>
-                  <div className="text-xs text-green-500">+45 in last 5m</div>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Tablet className="h-4 w-4 text-amber-500" />
-                  <span className="text-sm">Tablet Users</span>
-                </div>
-                <div className="text-right">
-                  <div className="font-semibold">345</div>
-                  <div className="text-xs text-green-500">+12 in last 5m</div>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Monitor className="h-4 w-4 text-green-500" />
-                  <span className="text-sm">Desktop Users</span>
-                </div>
-                <div className="text-right">
-                  <div className="font-semibold">860</div>
-                  <div className="text-xs text-green-500">+23 in last 5m</div>
-                </div>
-              </div>
-              <div className="pt-4 border-t">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Total Active</span>
-                  <div className="text-right">
-                    <div className="font-bold text-xl">3,450</div>
-                    <div className="text-xs text-green-500">+80 in last 5m</div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Average Daily</span>
+                    <div className="font-semibold">
+                      {(trafficData?.reduce((sum: number, item: any) => sum + item.total_requests, 0) / (trafficData?.length || 1)).toFixed(0).toLocaleString()} requests
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Total Days Tracked</span>
+                    <div className="font-semibold">{trafficData?.length || 0} days</div>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+              </CardContent>
+            </Card>
 
-      {/* Daily/Weekly/Monthly Tabs */}
-      <Tabs defaultValue="daily" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="daily">
-            <Calendar className="h-4 w-4 mr-2" />
-            Daily Traffic
-          </TabsTrigger>
-          <TabsTrigger value="weekly">
-            <BarChart3 className="h-4 w-4 mr-2" />
-            Weekly Trends
-          </TabsTrigger>
-          <TabsTrigger value="monthly">
-            <TrendingUp className="h-4 w-4 mr-2" />
-            Monthly Growth
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="daily">
-          <Card>
-            <CardHeader>
-              <CardTitle>Daily Traffic Breakdown</CardTitle>
-              <CardDescription>Hour-by-hour analysis of yesterday's traffic</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-96">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={dailyTraffic}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                    <XAxis dataKey="hour" stroke="#6b7280" />
-                    <YAxis stroke="#6b7280" />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Legend />
-                    <Line
-                      type="monotone"
-                      dataKey="visitors"
-                      stroke="#8884d8"
-                      strokeWidth={2}
-                      dot={{ r: 4 }}
-                      activeDot={{ r: 6 }}
-                      name="Visitors"
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="pageviews"
-                      stroke="#82ca9d"
-                      strokeWidth={2}
-                      dot={{ r: 4 }}
-                      activeDot={{ r: 6 }}
-                      name="Page Views"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="weekly">
-          <Card>
-            <CardHeader>
-              <CardTitle>Weekly Performance</CardTitle>
-              <CardDescription>Week-over-week comparison</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-96">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={weeklyTraffic}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                    <XAxis dataKey="day" stroke="#6b7280" />
-                    <YAxis stroke="#6b7280" />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Legend />
-                    <Bar
-                      dataKey="users"
-                      fill="#8884d8"
-                      name="Users"
-                      radius={[4, 4, 0, 0]}
-                    />
-                    <Bar
-                      dataKey="sessions"
-                      fill="#82ca9d"
-                      name="Sessions"
-                      radius={[4, 4, 0, 0]}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="monthly">
-          <Card>
-            <CardHeader>
-              <CardTitle>Monthly Growth Metrics</CardTitle>
-              <CardDescription>Platform growth over the last 8 months</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-96">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={monthlyTraffic}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                    <XAxis dataKey="month" stroke="#6b7280" />
-                    <YAxis stroke="#6b7280" />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Legend />
-                    <Line
-                      type="monotone"
-                      dataKey="users"
-                      stroke="#8884d8"
-                      strokeWidth={2}
-                      dot={{ r: 4 }}
-                      activeDot={{ r: 6 }}
-                      name="Users"
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="videos"
-                      stroke="#82ca9d"
-                      strokeWidth={2}
-                      dot={{ r: 4 }}
-                      activeDot={{ r: 6 }}
-                      name="Videos"
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="orders"
-                      stroke="#ff7300"
-                      strokeWidth={2}
-                      dot={{ r: 4 }}
-                      activeDot={{ r: 6 }}
-                      name="Orders"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
+            {/* Health Status */}
+            <Card>
+              <CardHeader>
+                <CardTitle>System Health</CardTitle>
+                <CardDescription>API performance indicators</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      <span className="text-sm">Error Rate</span>
+                    </div>
+                    <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">
+                      {errors?.error_rate_percent === 0 ? 'Perfect' : `${errors?.error_rate_percent}%`}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Zap className="h-4 w-4 text-cyan-500" />
+                      <span className="text-sm">Avg Response</span>
+                    </div>
+                    <Badge variant="outline" className="bg-cyan-500/10 text-cyan-500 border-cyan-500/20">
+                      {formatResponseTime(overview?.avg_response_time || 0)}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Server className="h-4 w-4 text-purple-500" />
+                      <span className="text-sm">Uptime</span>
+                    </div>
+                    <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">
+                      99.99%
+                    </Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

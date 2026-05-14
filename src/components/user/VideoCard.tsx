@@ -34,11 +34,11 @@ interface VideoCardProps {
 export function VideoCard({ v, index, activeIndex }: VideoCardProps) {
     const videoRef = useRef<HTMLVideoElement | null>(null);
 
-    const { data, isLoading } = useQuery({
-        queryKey: ["fetchUserPoints"],
-        queryFn: fetchUserPoints,
-        refetchInterval: 2000
-    })
+    // const { data, isLoading } = useQuery({
+    //     queryKey: ["fetchUserPoints"],
+    //     queryFn: fetchUserPoints,
+    //     refetchInterval: 2000
+    // })
 
     useEffect(() => {
         const video = videoRef.current;
@@ -84,14 +84,14 @@ export function VideoCard({ v, index, activeIndex }: VideoCardProps) {
                 <div className="absolute top-5 left-5 right-5 flex items-start justify-between z-20">
                     <div>
                         {/* Coins */}
-                        <motion.div
+                        {/* <motion.div
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             className="flex items-center gap-2 bg-white/20 backdrop-blur-md shadow-lg px-4 py-1.5 rounded-full"
                         >
                             <Coins className="w-4 h-4 text-yellow-300" />
                             <span className="text-sm font-semibold text-white">{isLoading ? <>Loading</> : data?.points}</span>
-                        </motion.div>
+                        </motion.div> */}
 
                         {/* Advertiser */}
                         <motion.div
