@@ -68,6 +68,8 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import CreatePaymentProcessor from './CreatePaymentProcessor';
+
 
 export default function Users() {
     const queryClient = useQueryClient();
@@ -383,10 +385,14 @@ export default function Users() {
                             </CardDescription>
                         </div>
                         <div className="flex items-center gap-2">
-                            <Button variant="outline" size="sm">
-                                <Download className="h-4 w-4 mr-2" />
-                                Export
-                            </Button>
+
+                            <Dialog>
+                                <DialogTrigger><Button variant="outline" size="sm">Create Payment Processor                            </Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                    <CreatePaymentProcessor />
+                                </DialogContent>
+                            </Dialog>
                         </div>
                     </div>
                 </CardHeader>

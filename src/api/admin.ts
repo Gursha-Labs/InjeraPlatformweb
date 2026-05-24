@@ -36,3 +36,37 @@ export const assignrole = async (data: { userId: string; role: string }) => {
     apiClient.post(`/assign-role/${userId}`, { role }),
   );
 };
+export const createPaymentProcessor = async (data: {
+  username: string;
+  email: string;
+  password: string;
+}) => {
+  const { username, email, password } = data;
+  return handleApiResponse(() =>
+    apiClient.post("/payment-processors", { username, email, password }),
+  );
+};
+
+export const SystemBalance = () => {
+  return handleApiResponse(() => apiClient.get("/system/balance"));
+};
+
+export const PaymnetProcessorslist = () => {
+  return handleApiResponse(() => apiClient.get("/payment-processors"));
+};
+export const DeletePaymnetProcessor = (processorId: string) => {
+  return handleApiResponse(() =>
+    apiClient.delete(`/payment-processors/${processorId}`),
+  );
+};
+export const updatePaymnetProcessor = (
+  processorId: string,
+  data: {
+    username: string;
+    email: string;
+  },
+) => {
+  return handleApiResponse(() =>
+    apiClient.put(`/payment-processors/${processorId}`, data),
+  );
+};

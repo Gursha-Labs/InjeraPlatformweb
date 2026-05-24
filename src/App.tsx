@@ -45,6 +45,8 @@ import PaymentProcess from "./pages/paymentprocessor/PaymentProcess";
 import PaymentProcessDetail from "./pages/paymentprocessor/PaymentProcessDetail";
 import { PaymentProcessSidebar } from "./components/paymentprocess/app-sidebar";
 import PaymnetPage from "./pages/paymentprocessor/PaymentPage";
+import PaymentProcessor from "./pages/admin/PaymentProcessor";
+import Subscription from "./pages/admin/Subscription";
 
 function App() {
   const dispatch = useAppDispatch();
@@ -105,6 +107,7 @@ function App() {
               <Route path="users" element={<Users />} />
               <Route path="trafic" element={<Traffic />} />
               <Route path="money" element={<Money />} />
+              <Route path="subscription" element={<Subscription />} />
               <Route path="log" element={<Log />} />
               <Route path="settings" element={<AdminSetting />} />
             </Route>
