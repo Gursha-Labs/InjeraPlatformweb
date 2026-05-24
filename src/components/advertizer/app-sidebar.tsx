@@ -21,7 +21,8 @@ import {
   IconWallet,
   IconBell,
   IconBuilding,
-  IconShoppingCart
+  IconShoppingCart,
+  IconUserCircle, // Added for Profile
 } from "@tabler/icons-react"
 
 import { NavDocuments } from "@/components/nav-documents"
@@ -41,6 +42,8 @@ import {
 
 import { useAppSelector } from "@/store/hook"
 import { useLocation } from "react-router-dom"
+import { ModeToggle } from "../mode-toggle"
+import { SunMoonIcon } from "lucide-react"
 
 // -------- Types --------
 export interface DocumentItem {
@@ -83,13 +86,8 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       { title: "Overview", url: "/advertiser", icon: IconInnerShadowTop },
       { title: "Ad Videos", url: "/advertiser/advideo", icon: IconBriefcase },
       { title: "Create Ad Video", url: "/advertiser/advideo/create", icon: IconListDetails },
-      // { title: "Analytics", url: "/advertiser/analytics", icon: IconChartBar },
-      // { title: "Orders", url: "/advertiser/orders", icon: IconShoppingCart },
-      // { title: "Wallet", url: "/advertiser/wallet", icon: IconWallet },
       { title: "Settings", url: "/advertiser/settings", icon: IconSettings },
     ],
-
-
 
     navSecondary: [
       { title: "Get Help", url: "/advertiser/help", icon: IconHelp },
@@ -122,7 +120,6 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
 
       <SidebarContent>
-        {/* Main Navigation */}
         <div className="space-y-1">
           <NavMain
             items={data.navMain.map((item) => ({
@@ -132,24 +129,19 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
           />
         </div>
 
-        {/* Documents/Secondary Navigation */}
-        {/* <div className="mt-8">
-          <NavDocuments
-            items={data.documents.map((item) => ({
-              ...item,
-              isActive: isActive(item.url),
-            }))}
-          />
-        </div> */}
-
-        {/* Bottom Help Section */}
-        <div className="mt-auto">
-          <NavSecondary
-            items={data.navSecondary.map((item) => ({
-              ...item,
-              isActive: isActive(item.url),
-            }))}
-          />
+        <div className="mt-auto p-4 border-t border-border/50">
+          <div className="flex items-center justify-between gap-3 rounded-xl bg-muted/30 p-3 transition-all duration-300 hover:bg-muted/50">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-background shadow-sm">
+                <SunMoonIcon className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm font-medium">Theme</span>
+                <span className="text-xs text-muted-foreground">Light / Dark / System</span>
+              </div>
+            </div>
+            <ModeToggle />
+          </div>
         </div>
       </SidebarContent>
 

@@ -1,3 +1,6 @@
+
+
+
 import * as React from "react"
 import {
   IconChartBar,
@@ -21,7 +24,8 @@ import {
   IconWallet,
   IconBell,
   IconBuilding,
-  IconShoppingCart
+  IconShoppingCart,
+  IconUserCircle, // Added for Profile
 } from "@tabler/icons-react"
 
 import { NavDocuments } from "@/components/nav-documents"
@@ -41,6 +45,8 @@ import {
 
 import { useAppSelector } from "@/store/hook"
 import { useLocation } from "react-router-dom"
+import { ModeToggle } from "../mode-toggle"
+import { SunMoonIcon } from "lucide-react"
 
 // -------- Types --------
 export interface DocumentItem {
@@ -67,6 +73,8 @@ export function AdminSideBar(props: React.ComponentProps<typeof Sidebar>) {
   const { user, loading } = useAppSelector((state) => state.auth)
   const { pathname } = useLocation()
 
+
+
   const data: {
     user: SidebarUser
     navMain: NavMainItem[]
@@ -84,7 +92,7 @@ export function AdminSideBar(props: React.ComponentProps<typeof Sidebar>) {
       // { title: "Advertisers", url: "/admin/advertisers", icon: IconBriefcase },
       { title: "Users", url: "/admin/users", icon: IconListDetails },
       { title: "Trafic", url: "/admin/trafic", icon: IconShoppingCart },
-      { title: "Wallet", url: "/admin/money", icon: IconWallet },
+      // { title: "Wallet", url: "/admin/money", icon: IconWallet },
       { title: "Variables", url: "/admin/log", icon: IconSettings },
     ],
 
@@ -98,12 +106,13 @@ export function AdminSideBar(props: React.ComponentProps<typeof Sidebar>) {
   // Helper function to check if a path is active
   const isActive = (url: string) => {
     // Exact match for overview
-    if (url === "/advertiser") {
-      return pathname === "/advertiser" || pathname === "/advertiser/";
+    if (url === "/admin") {
+      return pathname === "/admin" || pathname === "/admin/";
     }
     // For nested routes, check if pathname starts with the url
     return pathname.startsWith(url);
   };
+
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
@@ -121,7 +130,6 @@ export function AdminSideBar(props: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
 
       <SidebarContent>
-        {/* Main Navigation */}
         <div className="space-y-1">
           <NavMain
             items={data.navMain.map((item) => ({
@@ -131,24 +139,19 @@ export function AdminSideBar(props: React.ComponentProps<typeof Sidebar>) {
           />
         </div>
 
-        {/* Documents/Secondary Navigation */}
-        {/* <div className="mt-8">
-          <NavDocuments
-            items={data.documents.map((item) => ({
-              ...item,
-              isActive: isActive(item.url),
-            }))}
-          />
-        </div> */}
-
-        {/* Bottom Help Section */}
-        <div className="mt-auto">
-          <NavSecondary
-            items={data.navSecondary.map((item) => ({
-              ...item,
-              isActive: isActive(item.url),
-            }))}
-          />
+        <div className="mt-auto p-4 border-t border-border/50">
+          <div className="flex items-center justify-between gap-3 rounded-xl bg-muted/30 p-3 transition-all duration-300 hover:bg-muted/50">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-background shadow-sm">
+                <SunMoonIcon className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm font-medium">Theme</span>
+                <span className="text-xs text-muted-foreground">Light / Dark / System</span>
+              </div>
+            </div>
+            <ModeToggle />
+          </div>
         </div>
       </SidebarContent>
 

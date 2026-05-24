@@ -2,21 +2,18 @@ import { fetchadvertiserownprofile } from '@/api/profile'
 import { updateadveriserprofile } from '@/api/profile'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState, useEffect, useRef } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { toast } from 'sonner'
 import {
     Edit, Save, X, Camera, Mail, Phone, Globe,
-    MapPin, Building, Briefcase, DollarSign, Bell,
+    MapPin, Building, Briefcase, DollarSign,
     Eye, Calendar, CheckCircle, Clock, TrendingUp,
-    Users, Award, Shield, CreditCard, Settings,
-    Upload, Image as ImageIcon, Link, Facebook,
-    Twitter, Instagram, Linkedin, Youtube, Globe as WebIcon,
-    EyeOff, BellOff, Mail as MailIcon, ExternalLink,
-    Trash2, User
+    Users, Shield, CreditCard, Upload, Trash2,
+    User, Link2, AlertCircle, CheckCheck, Award
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-// Components
+// shadcn/ui components
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -27,7 +24,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Progress } from "@/components/ui/progress"
 import {
@@ -64,10 +60,12 @@ export default function AdvertiserProfile() {
     const updateMutation = useMutation({
         mutationFn: updateadveriserprofile,
         onSuccess: (response) => {
-            toast.success('Profile Updated Successfully!')
+            toast.success('Profile updated successfully', {
+                description: 'Your changes have been saved.',
+                icon: <CheckCheck className="w-4 h-4" />,
+            })
             queryClient.invalidateQueries({ queryKey: ["fetchadvertiserownprofile"] })
             setIsEditing(false)
-            // Clear file states
             setLogoFile(null)
             setProfilePictureFile(null)
             setCoverImageFile(null)
@@ -76,8 +74,9 @@ export default function AdvertiserProfile() {
             setCoverImagePreview('')
         },
         onError: (error: any) => {
-            toast.error('Failed to Update Profile', {
-                description: error?.message || 'Please try again',
+            toast.error('Update failed', {
+                description: error?.message || 'Please try again later.',
+                icon: <AlertCircle className="w-4 h-4" />,
             })
         }
     })
@@ -89,165 +88,104 @@ export default function AdvertiserProfile() {
         }
     }, [data])
 
-    // Handle input changes
     const handleInputChange = (field: string, value: any) => {
-        setEditData((prev: any) => ({
-            ...prev,
-            [field]: value
-        }))
+        setEditData((prev: any) => ({ ...prev, [field]: value }))
     }
 
-    // Handle file selection
     const handleFileSelect = (type: 'logo' | 'profile_picture' | 'cover_image', file: File) => {
         const reader = new FileReader()
         reader.onloadend = () => {
             const preview = reader.result as string
-
-            switch (type) {
-                case 'logo':
-                    setLogoFile(file)
-                    setLogoPreview(preview)
-                    break
-                case 'profile_picture':
-                    setProfilePictureFile(file)
-                    setProfilePicturePreview(preview)
-                    break
-                case 'cover_image':
-                    setCoverImageFile(file)
-                    setCoverImagePreview(preview)
-                    break
-            }
+            if (type === 'logo') { setLogoFile(file); setLogoPreview(preview) }
+            if (type === 'profile_picture') { setProfilePictureFile(file); setProfilePicturePreview(preview) }
+            if (type === 'cover_image') { setCoverImageFile(file); setCoverImagePreview(preview) }
         }
         reader.readAsDataURL(file)
     }
 
-    // Remove image
     const removeImage = (type: 'logo' | 'profile_picture' | 'cover_image') => {
-        switch (type) {
-            case 'logo':
-                setLogoFile(null)
-                setLogoPreview('')
-                if (logoInputRef.current) logoInputRef.current.value = ''
-                break
-            case 'profile_picture':
-                setProfilePictureFile(null)
-                setProfilePicturePreview('')
-                if (profilePictureInputRef.current) profilePictureInputRef.current.value = ''
-                break
-            case 'cover_image':
-                setCoverImageFile(null)
-                setCoverImagePreview('')
-                if (coverImageInputRef.current) coverImageInputRef.current.value = ''
-                break
-        }
+        if (type === 'logo') { setLogoFile(null); setLogoPreview(''); if (logoInputRef.current) logoInputRef.current.value = '' }
+        if (type === 'profile_picture') { setProfilePictureFile(null); setProfilePicturePreview(''); if (profilePictureInputRef.current) profilePictureInputRef.current.value = '' }
+        if (type === 'cover_image') { setCoverImageFile(null); setCoverImagePreview(''); if (coverImageInputRef.current) coverImageInputRef.current.value = '' }
     }
 
-    // Handle save
     const handleSave = async () => {
         try {
-            // Create FormData for file uploads
             const formData = new FormData()
-
-            // Append all text fields
             Object.entries(editData).forEach(([key, value]) => {
                 if (value !== undefined && value !== null && value !== '') {
-                    // Skip image fields that will be handled as files
                     if (!['logo', 'profile_picture', 'cover_image'].includes(key)) {
                         formData.append(key, value.toString())
                     }
                 }
             })
-
-            // Append files if selected
             if (logoFile) formData.append('logo', logoFile)
             if (profilePictureFile) formData.append('profile_picture', profilePictureFile)
             if (coverImageFile) formData.append('cover_image', coverImageFile)
-
             await updateMutation.mutateAsync({ data: formData })
         } catch (error) {
             console.error('Error saving profile:', error)
         }
     }
 
-    // Handle cancel
     const handleCancel = () => {
-        if (data) {
-            setEditData(data)
-        }
-        // Clear all file selections
-        setLogoFile(null)
-        setProfilePictureFile(null)
-        setCoverImageFile(null)
-        setLogoPreview('')
-        setProfilePicturePreview('')
-        setCoverImagePreview('')
+        if (data) setEditData(data)
+        setLogoFile(null); setProfilePictureFile(null); setCoverImageFile(null)
+        setLogoPreview(''); setProfilePicturePreview(''); setCoverImagePreview('')
         if (logoInputRef.current) logoInputRef.current.value = ''
         if (profilePictureInputRef.current) profilePictureInputRef.current.value = ''
         if (coverImageInputRef.current) coverImageInputRef.current.value = ''
         setIsEditing(false)
     }
 
-    // Format currency
     const formatCurrency = (amount: string) => {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD',
-            minimumFractionDigits: 2
-        }).format(parseFloat(amount))
+        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(parseFloat(amount))
     }
 
-    // Format date
     const formatDate = (dateString: string) => {
         const date = new Date(dateString)
-        return new Intl.DateTimeFormat('en-US', {
-            month: 'long',
-            day: 'numeric',
-            year: 'numeric'
-        }).format(date)
+        return new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).format(date)
     }
 
-    // Calculate profile completion percentage
     const calculateProfileCompletion = () => {
         if (!data) return 0
-
         const fields = [
-            data.company_name !== 'Pending',
+            data.company_name && data.company_name !== 'Pending',
             data.business_email,
-            data.phone_number !== 'Pending',
+            data.phone_number && data.phone_number !== 'Pending',
             data.website,
             data.logo,
             data.profile_picture,
             data.cover_image,
             data.description,
-            data.country !== 'Pending',
-            data.city !== 'Pending',
+            data.country && data.country !== 'Pending',
+            data.city && data.city !== 'Pending',
             data.address,
         ]
-
         const completed = fields.filter(Boolean).length
         return Math.round((completed / fields.length) * 100)
     }
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-gradient-to-b from-background to-background/50 py-8">
-                <div className="container mx-auto px-4">
-                    <div className="max-w-6xl mx-auto">
-                        {/* Header Skeleton */}
-                        <div className="mb-8">
-                            <Skeleton className="h-10 w-64 mb-2" />
-                            <Skeleton className="h-4 w-96" />
+            <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-8">
+                <div className="container max-w-6xl mx-auto px-4">
+                    <div className="space-y-6">
+                        <div className="flex justify-between items-center">
+                            <div className="space-y-2">
+                                <Skeleton className="h-8 w-48" />
+                                <Skeleton className="h-4 w-72" />
+                            </div>
+                            <Skeleton className="h-10 w-28" />
                         </div>
-
-                        {/* Profile Card Skeleton */}
-                        <div className="grid lg:grid-cols-3 gap-8">
+                        <div className="grid lg:grid-cols-3 gap-6">
                             <div className="lg:col-span-2 space-y-6">
                                 <Skeleton className="h-64 w-full rounded-xl" />
-                                <Skeleton className="h-32 w-full rounded-xl" />
+                                <Skeleton className="h-96 w-full rounded-xl" />
                             </div>
                             <div className="space-y-6">
-                                <Skeleton className="h-64 w-full rounded-xl" />
                                 <Skeleton className="h-48 w-full rounded-xl" />
+                                <Skeleton className="h-64 w-full rounded-xl" />
                             </div>
                         </div>
                     </div>
@@ -258,20 +196,19 @@ export default function AdvertiserProfile() {
 
     if (error || !data) {
         return (
-            <div className="min-h-screen bg-gradient-to-b from-background to-background/50 py-8">
-                <div className="container mx-auto px-4">
-                    <div className="max-w-2xl mx-auto text-center">
-                        <Alert variant="destructive" className="mb-6">
-                            <AlertTitle>Failed to Load Profile</AlertTitle>
-                            <AlertDescription>
-                                {error?.message || 'Unable to load your profile information'}
-                            </AlertDescription>
-                        </Alert>
-                        <Button onClick={() => refetch()} className="gap-2">
-                            Try Again
-                        </Button>
-                    </div>
-                </div>
+            <div className="min-h-screen bg-background flex items-center justify-center p-4">
+                <Card className="max-w-md w-full text-center">
+                    <CardHeader>
+                        <div className="mx-auto p-3 bg-destructive/10 rounded-full w-fit mb-4">
+                            <AlertCircle className="w-8 h-8 text-destructive" />
+                        </div>
+                        <CardTitle>Unable to load profile</CardTitle>
+                        <CardDescription>{error?.message || 'Please check your connection and try again.'}</CardDescription>
+                    </CardHeader>
+                    <CardFooter className="justify-center">
+                        <Button onClick={() => refetch()} variant="outline">Retry</Button>
+                    </CardFooter>
+                </Card>
             </div>
         )
     }
@@ -280,7 +217,6 @@ export default function AdvertiserProfile() {
     const isPremium = data.subscription_plan !== 'free'
     const isActive = data.is_active
 
-    // Get image URLs
     const getImageUrl = (imagePath: string | null) => {
         if (!imagePath) return ''
         if (imagePath.startsWith('http')) return imagePath
@@ -288,510 +224,347 @@ export default function AdvertiserProfile() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-background to-background/50 py-8">
-            <div className="container mx-auto px-4">
-                <div className="max-w-6xl mx-auto">
-                    {/* Header */}
-                    <motion.div
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="mb-8"
-                    >
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                            <div>
-                                <h1 className="text-3xl font-bold mb-2">Advertiser Profile</h1>
-                                <p className="text-muted-foreground">
-                                    Manage your advertising account and settings
-                                </p>
-                            </div>
+        <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+            <div className="container max-w-6xl mx-auto px-4 py-8">
+                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
 
-                            <div className="flex items-center gap-3">
-                                <Badge variant={isActive ? "default" : "secondary"} className="gap-2">
-                                    {isActive ? (
-                                        <>
-                                            <CheckCircle className="w-3 h-3" />
-                                            Active
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Clock className="w-3 h-3" />
-                                            Inactive
-                                        </>
-                                    )}
-                                </Badge>
-
-                                {!isEditing && (
-                                    <Button
-                                        onClick={() => setIsEditing(true)}
-                                        className="gap-2"
-                                    >
-                                        <Edit className="w-4 h-4" />
-                                        Edit Profile
-                                    </Button>
-                                )}
-                            </div>
+                    {/* Header Section */}
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div>
+                            <h1 className="text-3xl font-bold tracking-tight">Advertiser Profile</h1>
+                            <p className="text-muted-foreground mt-1">Manage your account, business details, and preferences</p>
                         </div>
+                        <div className="flex items-center gap-3">
+                            <Badge variant={isActive ? "default" : "secondary"} className="gap-1.5 px-3 py-1">
+                                {isActive ? <CheckCircle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+                                {isActive ? 'Active' : 'Inactive'}
+                            </Badge>
+                            {!isEditing && (
+                                <Button onClick={() => setIsEditing(true)} className="gap-2 shadow-sm">
+                                    <Edit className="w-4 h-4" />
+                                    Edit Profile
+                                </Button>
+                            )}
+                        </div>
+                    </div>
 
-                        {/* Profile Completion */}
-                        <Card>
-                            <CardContent className="p-6">
-                                <div className="flex items-center justify-between mb-4">
-                                    <div>
-                                        <h3 className="font-semibold">Profile Completion</h3>
-                                        <p className="text-sm text-muted-foreground">
-                                            Complete your profile to unlock all features
-                                        </p>
-                                    </div>
-                                    <Badge variant={profileCompletion === 100 ? "default" : "outline"}>
-                                        {profileCompletion}%
-                                    </Badge>
+                    {/* Profile Completion Card */}
+                    <Card>
+                        <CardContent className="p-5">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-3">
+                                <div>
+                                    <h3 className="font-semibold">Profile Strength</h3>
+                                    <p className="text-sm text-muted-foreground">Complete your profile to maximize visibility</p>
                                 </div>
-                                <Progress value={profileCompletion} className="h-2" />
-                                {profileCompletion < 100 && (
-                                    <p className="text-xs text-muted-foreground mt-2">
-                                        Add missing information to improve your profile visibility
-                                    </p>
-                                )}
-                            </CardContent>
-                        </Card>
-                    </motion.div>
+                                <Badge variant={profileCompletion === 100 ? "default" : "outline"} className="w-fit">
+                                    {profileCompletion}% Complete
+                                </Badge>
+                            </div>
+                            <Progress value={profileCompletion} className="h-2" />
+                            {profileCompletion < 100 && (
+                                <p className="text-xs text-muted-foreground mt-3 flex items-center gap-1">
+                                    <AlertCircle className="w-3 h-3" />
+                                    Add missing information to improve your profile
+                                </p>
+                            )}
+                        </CardContent>
+                    </Card>
 
+                    {/* Tabs Navigation */}
                     <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-                        <TabsList className="grid grid-cols-1 sm:grid-cols-4 lg:grid-cols-6">
+                        <TabsList className="grid grid-cols-3 w-full max-w-md">
                             <TabsTrigger value="overview">Overview</TabsTrigger>
                             <TabsTrigger value="profile">Profile</TabsTrigger>
                             <TabsTrigger value="business">Business</TabsTrigger>
-                            <TabsTrigger value="preferences">Preferences</TabsTrigger>
-                            <TabsTrigger value="subscription">Subscription</TabsTrigger>
-                            <TabsTrigger value="security">Security</TabsTrigger>
                         </TabsList>
 
-                        {/* Overview Tab */}
+                        {/* OVERVIEW TAB */}
                         <TabsContent value="overview" className="space-y-6">
                             <div className="grid lg:grid-cols-3 gap-6">
-                                {/* Left Column - Stats */}
+                                {/* Stats Grid - Left 2 columns */}
                                 <div className="lg:col-span-2 space-y-6">
-                                    {/* Stats Cards */}
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <div className="grid sm:grid-cols-3 gap-4">
                                         <Card>
-                                            <CardContent className="p-6">
+                                            <CardContent className="p-5">
                                                 <div className="flex items-center justify-between">
                                                     <div>
-                                                        <p className="text-sm text-muted-foreground">Total Ads</p>
-                                                        <p className="text-2xl font-bold">{data.total_ads_uploaded || 0}</p>
+                                                        <p className="text-sm font-medium text-muted-foreground">Total Ads</p>
+                                                        <p className="text-3xl font-bold mt-1">{data.total_ads_uploaded || 0}</p>
                                                     </div>
-                                                    <div className="p-3 bg-blue-500/10 rounded-lg">
-                                                        <Briefcase className="w-5 h-5 text-blue-500" />
+                                                    <div className="p-2.5 bg-primary/10 rounded-xl">
+                                                        <Briefcase className="w-5 h-5 text-primary" />
                                                     </div>
                                                 </div>
                                             </CardContent>
                                         </Card>
-
                                         <Card>
-                                            <CardContent className="p-6">
+                                            <CardContent className="p-5">
                                                 <div className="flex items-center justify-between">
                                                     <div>
-                                                        <p className="text-sm text-muted-foreground">Total Views</p>
-                                                        <p className="text-2xl font-bold">
-                                                            {(data.total_ad_views || 0).toLocaleString()}
-                                                        </p>
+                                                        <p className="text-sm font-medium text-muted-foreground">Total Views</p>
+                                                        <p className="text-3xl font-bold mt-1">{(data.total_ad_views || 0).toLocaleString()}</p>
                                                     </div>
-                                                    <div className="p-3 bg-green-500/10 rounded-lg">
-                                                        <Eye className="w-5 h-5 text-green-500" />
+                                                    <div className="p-2.5 bg-emerald-500/10 rounded-xl">
+                                                        <Eye className="w-5 h-5 text-emerald-500" />
                                                     </div>
                                                 </div>
                                             </CardContent>
                                         </Card>
-
                                         <Card>
-                                            <CardContent className="p-6">
+                                            <CardContent className="p-5">
                                                 <div className="flex items-center justify-between">
                                                     <div>
-                                                        <p className="text-sm text-muted-foreground">Total Spent</p>
-                                                        <p className="text-2xl font-bold">
-                                                            {formatCurrency(data.total_spent || '0')}
-                                                        </p>
+                                                        <p className="text-sm font-medium text-muted-foreground">Total Spent</p>
+                                                        <p className="text-3xl font-bold mt-1">{formatCurrency(data.total_spent || '0')}</p>
                                                     </div>
-                                                    <div className="p-3 bg-purple-500/10 rounded-lg">
-                                                        <DollarSign className="w-5 h-5 text-purple-500" />
+                                                    <div className="p-2.5 bg-amber-500/10 rounded-xl">
+                                                        <DollarSign className="w-5 h-5 text-amber-500" />
                                                     </div>
                                                 </div>
                                             </CardContent>
                                         </Card>
                                     </div>
 
-                                    {/* Account Status */}
+                                    {/* Account Details */}
                                     <Card>
-                                        <CardHeader>
-                                            <CardTitle>Account Status</CardTitle>
-                                            <CardDescription>Your current account information</CardDescription>
+                                        <CardHeader className="pb-3">
+                                            <CardTitle className="text-lg">Account Information</CardTitle>
                                         </CardHeader>
                                         <CardContent className="space-y-4">
                                             <div className="grid md:grid-cols-2 gap-4">
-                                                <div>
-                                                    <h4 className="text-sm font-medium text-muted-foreground mb-1">Plan</h4>
-                                                    <div className="flex items-center gap-2">
-                                                        <Badge variant={isPremium ? "default" : "outline"}>
+                                                <div className="flex items-start gap-3">
+                                                    <div className="p-2 bg-muted rounded-lg mt-0.5"><Shield className="w-4 h-4 text-muted-foreground" /></div>
+                                                    <div>
+                                                        <p className="text-sm font-medium text-muted-foreground">Subscription</p>
+                                                        <Badge variant={isPremium ? "default" : "secondary"} className="mt-1">
                                                             {data.subscription_plan || 'Free'}
                                                         </Badge>
-                                                        {!data.subscription_active && (
-                                                            <Badge variant="outline" className="text-amber-600">
-                                                                Inactive
-                                                            </Badge>
-                                                        )}
+                                                        {!data.subscription_active && <p className="text-xs text-muted-foreground mt-1">Inactive</p>}
                                                     </div>
                                                 </div>
-
-                                                <div>
-                                                    <h4 className="text-sm font-medium text-muted-foreground mb-1">Email Status</h4>
-                                                    <div className="flex items-center gap-2">
-                                                        {data.email_verified_at ? (
-                                                            <Badge className="bg-green-500">
-                                                                <CheckCircle className="w-3 h-3 mr-1" />
-                                                                Verified
-                                                            </Badge>
-                                                        ) : (
-                                                            <Badge variant="outline" className="text-amber-600">
-                                                                Pending
-                                                            </Badge>
-                                                        )}
+                                                <div className="flex items-start gap-3">
+                                                    <div className="p-2 bg-muted rounded-lg mt-0.5"><Mail className="w-4 h-4 text-muted-foreground" /></div>
+                                                    <div>
+                                                        <p className="text-sm font-medium text-muted-foreground">Email Status</p>
+                                                        <Badge variant={data.email_verified_at ? "default" : "outline"} className="mt-1 gap-1">
+                                                            {data.email_verified_at ? <CheckCircle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+                                                            {data.email_verified_at ? 'Verified' : 'Pending'}
+                                                        </Badge>
                                                     </div>
                                                 </div>
-                                            </div>
-
-                                            <Separator />
-
-                                            <div className="grid md:grid-cols-2 gap-4">
-                                                <div>
-                                                    <h4 className="text-sm font-medium text-muted-foreground mb-1">Member Since</h4>
-                                                    <p className="font-medium">
-                                                        {formatDate(data.user_created_at)}
-                                                    </p>
+                                                <div className="flex items-start gap-3">
+                                                    <div className="p-2 bg-muted rounded-lg mt-0.5"><Calendar className="w-4 h-4 text-muted-foreground" /></div>
+                                                    <div>
+                                                        <p className="text-sm font-medium text-muted-foreground">Member Since</p>
+                                                        <p className="text-sm font-medium mt-1">{formatDate(data.user_created_at)}</p>
+                                                    </div>
                                                 </div>
-
-                                                <div>
-                                                    <h4 className="text-sm font-medium text-muted-foreground mb-1">Last Updated</h4>
-                                                    <p className="font-medium">
-                                                        {formatDate(data.user_updated_at)}
-                                                    </p>
+                                                <div className="flex items-start gap-3">
+                                                    <div className="p-2 bg-muted rounded-lg mt-0.5"><Clock className="w-4 h-4 text-muted-foreground" /></div>
+                                                    <div>
+                                                        <p className="text-sm font-medium text-muted-foreground">Last Updated</p>
+                                                        <p className="text-sm font-medium mt-1">{formatDate(data.user_updated_at)}</p>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </CardContent>
                                     </Card>
                                 </div>
 
-                                {/* Right Column - Quick Actions */}
+                                {/* Right Column - Company Snapshot */}
                                 <div className="space-y-6">
                                     <Card>
-                                        <CardHeader>
-                                            <CardTitle>Quick Actions</CardTitle>
+                                        <CardHeader className="pb-3">
+                                            <CardTitle className="text-lg">Company Snapshot</CardTitle>
                                         </CardHeader>
-                                        <CardContent className="space-y-3">
-                                            <Button variant="outline" className="w-full justify-start gap-2">
-                                                <Settings className="w-4 h-4" />
-                                                Account Settings
-                                            </Button>
-                                            <Button variant="outline" className="w-full justify-start gap-2">
-                                                <CreditCard className="w-4 h-4" />
-                                                Upgrade Plan
-                                            </Button>
-                                            <Button variant="outline" className="w-full justify-start gap-2">
-                                                <TrendingUp className="w-4 h-4" />
-                                                View Analytics
-                                            </Button>
-                                            <Button variant="outline" className="w-full justify-start gap-2">
-                                                <Users className="w-4 h-4" />
-                                                Invite Team Members
-                                            </Button>
-                                        </CardContent>
-                                    </Card>
-
-                                    {/* Subscription Status */}
-                                    <Card>
-                                        <CardHeader>
-                                            <CardTitle>Subscription</CardTitle>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <div className="space-y-4">
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-sm">Current Plan</span>
-                                                    <Badge variant={isPremium ? "default" : "outline"}>
-                                                        {data.subscription_plan}
-                                                    </Badge>
+                                        <CardContent className="space-y-4">
+                                            <div className="flex items-center gap-4">
+                                                <Avatar className="h-16 w-16 border-2 shadow-sm">
+                                                    <AvatarImage src={getImageUrl(data.logo)} alt={data.company_name} />
+                                                    <AvatarFallback className="bg-primary/10 text-primary font-bold text-lg">
+                                                        {data.company_name?.charAt(0) || 'C'}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                <div>
+                                                    <p className="font-semibold text-lg">{data.company_name}</p>
+                                                    <p className="text-sm text-muted-foreground">{data.industry || 'Advertising'}</p>
                                                 </div>
-
-                                                {!data.subscription_active && (
-                                                    <Alert>
-                                                        <AlertTitle>Subscription Inactive</AlertTitle>
-                                                        <AlertDescription>
-                                                            Your subscription is not active. Please upgrade to access premium features.
-                                                        </AlertDescription>
-                                                    </Alert>
-                                                )}
-
-                                                <Button className="w-full gap-2" disabled={data.subscription_active}>
-                                                    <CreditCard className="w-4 h-4" />
-                                                    {data.subscription_active ? 'Active' : 'Upgrade Now'}
-                                                </Button>
                                             </div>
+                                            <Separator />
+                                            <div className="space-y-2 text-sm">
+                                                <div className="flex items-center gap-2 text-muted-foreground">
+                                                    <MapPin className="w-4 h-4" />
+                                                    <span>{data.city && data.city !== 'Pending' ? `${data.city}, ${data.country}` : 'Location not set'}</span>
+                                                </div>
+                                                {data.website && (
+                                                    <div className="flex items-center gap-2 text-muted-foreground">
+                                                        <Globe className="w-4 h-4" />
+                                                        <a href={data.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate">
+                                                            {data.website.replace(/^https?:\/\//, '')}
+                                                        </a>
+                                                    </div>
+                                                )}
+                                                {data.business_email && (
+                                                    <div className="flex items-center gap-2 text-muted-foreground">
+                                                        <Mail className="w-4 h-4" />
+                                                        <span>{data.business_email}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            {data.description && (
+                                                <>
+                                                    <Separator />
+                                                    <div>
+                                                        <p className="text-sm font-medium mb-1">About</p>
+                                                        <p className="text-sm text-muted-foreground line-clamp-3">{data.description}</p>
+                                                    </div>
+                                                </>
+                                            )}
                                         </CardContent>
                                     </Card>
                                 </div>
                             </div>
                         </TabsContent>
 
-                        {/* Profile Tab */}
+                        {/* PROFILE TAB */}
                         <TabsContent value="profile" className="space-y-6">
                             <Card>
-                                <CardHeader>
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <CardTitle>Personal Information</CardTitle>
-                                            <CardDescription>
-                                                Update your personal details and contact information
-                                            </CardDescription>
-                                        </div>
-                                        {!isEditing && (
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                className="gap-2"
-                                                onClick={() => setIsEditing(true)}
-                                            >
-                                                <Edit className="w-4 h-4" />
-                                                Edit
-                                            </Button>
-                                        )}
+                                <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-4">
+                                    <div>
+                                        <CardTitle>Personal & Visual Identity</CardTitle>
+                                        <CardDescription>Manage your profile images and personal details</CardDescription>
                                     </div>
+                                    {!isEditing && (
+                                        <Button variant="outline" size="sm" onClick={() => setIsEditing(true)} className="gap-2">
+                                            <Edit className="w-4 h-4" /> Edit
+                                        </Button>
+                                    )}
                                 </CardHeader>
-                                <CardContent className="space-y-6">
-                                    {/* Profile Images */}
-                                    <div className="grid md:grid-cols-3 gap-6">
+                                <CardContent className="space-y-8">
+                                    {/* Images Section */}
+                                    <div className="grid md:grid-cols-3 gap-8">
                                         {/* Profile Picture */}
-                                        <div className="space-y-4">
-                                            <div className="space-y-2">
-                                                <Label>Profile Picture</Label>
-                                                <div className="flex flex-col items-center gap-4">
-                                                    <Avatar className="h-32 w-32 border-4 border-background shadow-lg">
-                                                        <AvatarImage
-                                                            src={profilePicturePreview || getImageUrl(data.profile_picture)}
-                                                            alt="Profile"
-                                                        />
-                                                        <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-2xl font-bold">
-                                                            <User className="w-8 h-8" />
-                                                        </AvatarFallback>
-                                                    </Avatar>
-                                                    {isEditing && (
-                                                        <div className="flex flex-col gap-2">
-                                                            <input
-                                                                type="file"
-                                                                ref={profilePictureInputRef}
-                                                                accept="image/jpeg,image/png,image/jpg,image/gif"
-                                                                onChange={(e) => {
-                                                                    const file = e.target.files?.[0]
-                                                                    if (file) handleFileSelect('profile_picture', file)
-                                                                }}
-                                                                className="hidden"
-                                                            />
-                                                            <Button
-                                                                variant="outline"
-                                                                size="sm"
-                                                                className="gap-2"
-                                                                onClick={() => profilePictureInputRef.current?.click()}
-                                                            >
-                                                                <Camera className="w-4 h-4" />
-                                                                Change Photo
+                                        <div className="space-y-3">
+                                            <Label className="text-sm font-medium">Profile Picture</Label>
+                                            <div className="flex flex-col items-center gap-3">
+                                                <Avatar className="h-28 w-28 border-4 border-background shadow-md">
+                                                    <AvatarImage src={profilePicturePreview || getImageUrl(data.profile_picture)} />
+                                                    <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/5 text-2xl">
+                                                        <User className="w-8 h-8 text-primary" />
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                {isEditing && (
+                                                    <div className="flex gap-2">
+                                                        <Button variant="outline" size="sm" onClick={() => profilePictureInputRef.current?.click()} className="gap-1">
+                                                            <Camera className="w-3.5 h-3.5" /> Change
+                                                        </Button>
+                                                        {(profilePicturePreview || data.profile_picture) && (
+                                                            <Button variant="ghost" size="sm" onClick={() => removeImage('profile_picture')} className="gap-1 text-destructive">
+                                                                <Trash2 className="w-3.5 h-3.5" /> Remove
                                                             </Button>
-                                                            {(profilePicturePreview || data.profile_picture) && (
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    className="gap-2 text-red-500 hover:text-red-700 hover:bg-red-50"
-                                                                    onClick={() => removeImage('profile_picture')}
-                                                                >
-                                                                    <Trash2 className="w-4 h-4" />
-                                                                    Remove
-                                                                </Button>
-                                                            )}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Logo */}
-                                        <div className="space-y-4">
-                                            <div className="space-y-2">
-                                                <Label>Company Logo</Label>
-                                                <div className="flex flex-col items-center gap-4">
-                                                    <Avatar className="h-32 w-32 border-4 border-background shadow-lg">
-                                                        <AvatarImage
-                                                            src={logoPreview || getImageUrl(data.logo)}
-                                                            alt="Logo"
-                                                        />
-                                                        <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-2xl font-bold">
-                                                            {data.company_name?.charAt(0) || 'C'}
-                                                        </AvatarFallback>
-                                                    </Avatar>
-                                                    {isEditing && (
-                                                        <div className="flex flex-col gap-2">
-                                                            <input
-                                                                type="file"
-                                                                ref={logoInputRef}
-                                                                accept="image/jpeg,image/png,image/jpg,image/gif,image/svg"
-                                                                onChange={(e) => {
-                                                                    const file = e.target.files?.[0]
-                                                                    if (file) handleFileSelect('logo', file)
-                                                                }}
-                                                                className="hidden"
-                                                            />
-                                                            <Button
-                                                                variant="outline"
-                                                                size="sm"
-                                                                className="gap-2"
-                                                                onClick={() => logoInputRef.current?.click()}
-                                                            >
-                                                                <Camera className="w-4 h-4" />
-                                                                Change Logo
-                                                            </Button>
-                                                            {(logoPreview || data.logo) && (
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    className="gap-2 text-red-500 hover:text-red-700 hover:bg-red-50"
-                                                                    onClick={() => removeImage('logo')}
-                                                                >
-                                                                    <Trash2 className="w-4 h-4" />
-                                                                    Remove
-                                                                </Button>
-                                                            )}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Cover Image */}
-                                        <div className="space-y-4">
-                                            <div className="space-y-2">
-                                                <Label>Cover Image</Label>
-                                                <div className="flex flex-col items-center gap-4">
-                                                    <div className="relative h-32 w-full rounded-lg overflow-hidden border">
-                                                        <img
-                                                            src={coverImagePreview || getImageUrl(data.cover_image)}
-                                                            alt="Cover"
-                                                            className="w-full h-full object-cover"
-                                                        />
+                                                        )}
                                                     </div>
-                                                    {isEditing && (
-                                                        <div className="flex flex-col gap-2">
-                                                            <input
-                                                                type="file"
-                                                                ref={coverImageInputRef}
-                                                                accept="image/jpeg,image/png,image/jpg,image/gif"
-                                                                onChange={(e) => {
-                                                                    const file = e.target.files?.[0]
-                                                                    if (file) handleFileSelect('cover_image', file)
-                                                                }}
-                                                                className="hidden"
-                                                            />
-                                                            <Button
-                                                                variant="outline"
-                                                                size="sm"
-                                                                className="gap-2"
-                                                                onClick={() => coverImageInputRef.current?.click()}
-                                                            >
-                                                                <Camera className="w-4 h-4" />
-                                                                Change Cover
+                                                )}
+                                                <input type="file" ref={profilePictureInputRef} accept="image/*" onChange={(e) => e.target.files?.[0] && handleFileSelect('profile_picture', e.target.files[0])} className="hidden" />
+                                            </div>
+                                        </div>
+                                        {/* Company Logo */}
+                                        <div className="space-y-3">
+                                            <Label className="text-sm font-medium">Company Logo</Label>
+                                            <div className="flex flex-col items-center gap-3">
+                                                <Avatar className="h-28 w-28 border-4 border-background shadow-md bg-white">
+                                                    <AvatarImage src={logoPreview || getImageUrl(data.logo)} />
+                                                    <AvatarFallback className="bg-gradient-to-br from-blue-500/20 to-indigo-500/20 text-2xl font-bold text-primary">
+                                                        {data.company_name?.charAt(0) || 'C'}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                {isEditing && (
+                                                    <div className="flex gap-2">
+                                                        <Button variant="outline" size="sm" onClick={() => logoInputRef.current?.click()} className="gap-1">
+                                                            <Camera className="w-3.5 h-3.5" /> Change
+                                                        </Button>
+                                                        {(logoPreview || data.logo) && (
+                                                            <Button variant="ghost" size="sm" onClick={() => removeImage('logo')} className="gap-1 text-destructive">
+                                                                <Trash2 className="w-3.5 h-3.5" /> Remove
                                                             </Button>
-                                                            {(coverImagePreview || data.cover_image) && (
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    className="gap-2 text-red-500 hover:text-red-700 hover:bg-red-50"
-                                                                    onClick={() => removeImage('cover_image')}
-                                                                >
-                                                                    <Trash2 className="w-4 h-4" />
-                                                                    Remove
-                                                                </Button>
-                                                            )}
-                                                        </div>
+                                                        )}
+                                                    </div>
+                                                )}
+                                                <input type="file" ref={logoInputRef} accept="image/*" onChange={(e) => e.target.files?.[0] && handleFileSelect('logo', e.target.files[0])} className="hidden" />
+                                            </div>
+                                        </div>
+                                        {/* Cover Image */}
+                                        <div className="space-y-3">
+                                            <Label className="text-sm font-medium">Cover Image</Label>
+                                            <div className="relative h-28 w-full rounded-lg overflow-hidden border bg-muted/30">
+                                                <img src={coverImagePreview || getImageUrl(data.cover_image)} alt="Cover" className="w-full h-full object-cover" />
+                                            </div>
+                                            {isEditing && (
+                                                <div className="flex gap-2 justify-center">
+                                                    <Button variant="outline" size="sm" onClick={() => coverImageInputRef.current?.click()} className="gap-1">
+                                                        <Camera className="w-3.5 h-3.5" /> Change
+                                                    </Button>
+                                                    {(coverImagePreview || data.cover_image) && (
+                                                        <Button variant="ghost" size="sm" onClick={() => removeImage('cover_image')} className="gap-1 text-destructive">
+                                                            <Trash2 className="w-3.5 h-3.5" /> Remove
+                                                        </Button>
                                                     )}
                                                 </div>
-                                            </div>
+                                            )}
+                                            <input type="file" ref={coverImageInputRef} accept="image/*" onChange={(e) => e.target.files?.[0] && handleFileSelect('cover_image', e.target.files[0])} className="hidden" />
                                         </div>
                                     </div>
 
                                     <Separator />
 
-                                    {/* Basic Information */}
+                                    {/* Contact & Basic Info */}
                                     <div className="grid md:grid-cols-2 gap-6">
                                         <div className="space-y-4">
                                             <div className="space-y-2">
-                                                <Label htmlFor="username">Username</Label>
-                                                {(
-                                                    <div className="flex items-center gap-2 p-2 px-3 rounded-lg border bg-muted/50">
-                                                        <span className="font-medium">{data.username}</span>
-                                                    </div>
-                                                )}
+                                                <Label>Username</Label>
+                                                <div className="flex items-center gap-2 px-3 py-2 rounded-lg border bg-muted/30 text-sm">
+                                                    <User className="w-4 h-4 text-muted-foreground" />
+                                                    <span>{data.username}</span>
+                                                </div>
                                             </div>
-
                                             <div className="space-y-2">
-                                                <Label htmlFor="email">Email Address</Label>
-                                                {
-                                                    <div className="flex items-center gap-2 p-2 px-3 rounded-lg border bg-muted/50">
-                                                        <Mail className="w-4 h-4" />
-                                                        <span>{data.email}</span>
-                                                    </div>
-                                                }
+                                                <Label>Email Address</Label>
+                                                <div className="flex items-center gap-2 px-3 py-2 rounded-lg border bg-muted/30 text-sm">
+                                                    <Mail className="w-4 h-4 text-muted-foreground" />
+                                                    <span>{data.email}</span>
+                                                </div>
                                             </div>
-
                                             <div className="space-y-2">
-                                                <Label htmlFor="phone_number">Phone Number</Label>
+                                                <Label>Phone Number</Label>
                                                 {isEditing ? (
-                                                    <Input
-                                                        id="phone_number"
-                                                        value={editData.phone_number || ''}
-                                                        onChange={(e) => handleInputChange('phone_number', e.target.value)}
-                                                    />
+                                                    <Input value={editData.phone_number || ''} onChange={(e) => handleInputChange('phone_number', e.target.value)} />
                                                 ) : (
-                                                    <div className="flex items-center gap-2 p-2 px-3 rounded-lg border bg-muted/50">
-                                                        <Phone className="w-4 h-4" />
+                                                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg border bg-muted/30 text-sm">
+                                                        <Phone className="w-4 h-4 text-muted-foreground" />
                                                         <span>{data.phone_number}</span>
                                                     </div>
                                                 )}
                                             </div>
                                         </div>
-
                                         <div className="space-y-4">
                                             <div className="space-y-2">
-                                                <Label htmlFor="company_name">Company Name</Label>
+                                                <Label>Company Name</Label>
                                                 {isEditing ? (
-                                                    <Input
-                                                        id="company_name"
-                                                        value={editData.company_name || ''}
-                                                        onChange={(e) => handleInputChange('company_name', e.target.value)}
-                                                    />
+                                                    <Input value={editData.company_name || ''} onChange={(e) => handleInputChange('company_name', e.target.value)} />
                                                 ) : (
-                                                    <div className="flex items-center gap-2 p-2 px-3 rounded-lg border bg-muted/50">
-                                                        <Building className="w-4 h-4" />
+                                                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg border bg-muted/30 text-sm">
+                                                        <Building className="w-4 h-4 text-muted-foreground" />
                                                         <span className="font-medium">{data.company_name}</span>
                                                     </div>
                                                 )}
                                             </div>
-
                                             <div className="space-y-2">
-                                                <Label htmlFor="business_email">Business Email</Label>
+                                                <Label>Business Email</Label>
                                                 {isEditing ? (
-                                                    <Input
-                                                        id="business_email"
-                                                        type="email"
-                                                        value={editData.business_email || ''}
-                                                        onChange={(e) => handleInputChange('business_email', e.target.value)}
-                                                    />
+                                                    <Input type="email" value={editData.business_email || ''} onChange={(e) => handleInputChange('business_email', e.target.value)} />
                                                 ) : (
-                                                    <div className="flex items-center gap-2 p-2 px-3 rounded-lg border bg-muted/50">
-                                                        <Mail className="w-4 h-4" />
+                                                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg border bg-muted/30 text-sm">
+                                                        <Mail className="w-4 h-4 text-muted-foreground" />
                                                         <span>{data.business_email || 'Not set'}</span>
                                                     </div>
                                                 )}
@@ -801,389 +574,111 @@ export default function AdvertiserProfile() {
 
                                     {/* Description */}
                                     <div className="space-y-2">
-                                        <Label htmlFor="description">Company Description</Label>
+                                        <Label>Company Description</Label>
                                         {isEditing ? (
-                                            <Textarea
-                                                id="description"
-                                                value={editData.description || ''}
-                                                onChange={(e) => handleInputChange('description', e.target.value)}
-                                                placeholder="Describe your company, services, and mission..."
-                                                className="min-h-[120px]"
-                                            />
+                                            <Textarea value={editData.description || ''} onChange={(e) => handleInputChange('description', e.target.value)} placeholder="Describe your company..." className="min-h-[100px]" />
                                         ) : (
-                                            <div className="p-4 rounded-lg border bg-muted/50">
-                                                <p className="whitespace-pre-line">
-                                                    {data.description || 'No description provided'}
-                                                </p>
+                                            <div className="p-3 rounded-lg border bg-muted/30 text-sm">
+                                                {data.description || 'No description provided'}
                                             </div>
                                         )}
                                     </div>
 
-                                    {/* Edit Mode Actions */}
-                                    {isEditing && (
-                                        <div className="flex justify-end gap-3 pt-6 border-t">
-                                            <Button
-                                                variant="outline"
-                                                onClick={handleCancel}
-                                                className="gap-2"
-                                                disabled={updateMutation.isPending}
-                                            >
-                                                <X className="w-4 h-4" />
-                                                Cancel
-                                            </Button>
-                                            <Button
-                                                onClick={handleSave}
-                                                className="gap-2"
-                                                disabled={updateMutation.isPending}
-                                            >
-                                                {updateMutation.isPending ? (
-                                                    <>
-                                                        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                                                        Saving...
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <Save className="w-4 h-4" />
-                                                        Save Changes
-                                                    </>
-                                                )}
-                                            </Button>
-                                        </div>
-                                    )}
+                                    {/* Edit Actions */}
+                                    <AnimatePresence>
+                                        {isEditing && (
+                                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="flex justify-end gap-3 pt-4 border-t">
+                                                <Button variant="outline" onClick={handleCancel} disabled={updateMutation.isPending}>Cancel</Button>
+                                                <Button onClick={handleSave} disabled={updateMutation.isPending} className="gap-2">
+                                                    {updateMutation.isPending ? <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" /> : <Save className="w-4 h-4" />}
+                                                    Save Changes
+                                                </Button>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
                                 </CardContent>
                             </Card>
                         </TabsContent>
 
-                        {/* Business Tab */}
+                        {/* BUSINESS TAB */}
                         <TabsContent value="business" className="space-y-6">
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>Business Information</CardTitle>
-                                    <CardDescription>
-                                        Update your business location and contact details
-                                    </CardDescription>
+                                    <CardTitle>Business Location & Online Presence</CardTitle>
+                                    <CardDescription>Update your business address, location, and website</CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-6">
                                     <div className="grid md:grid-cols-2 gap-6">
                                         <div className="space-y-4">
                                             <div className="space-y-2">
-                                                <Label htmlFor="country">Country</Label>
+                                                <Label>Country</Label>
                                                 {isEditing ? (
-                                                    <Select
-                                                        value={editData.country || ''}
-                                                        onValueChange={(value) => handleInputChange('country', value)}
-                                                    >
-                                                        <SelectTrigger>
-                                                            <SelectValue placeholder="Select country" />
-                                                        </SelectTrigger>
+                                                    <Select value={editData.country || ''} onValueChange={(val) => handleInputChange('country', val)}>
+                                                        <SelectTrigger><SelectValue placeholder="Select country" /></SelectTrigger>
                                                         <SelectContent>
-                                                            <SelectItem value="Ethiopia">Ethiopia</SelectItem>
-                                                            <SelectItem value="Kenya">Kenya</SelectItem>
-                                                            <SelectItem value="Nigeria">Nigeria</SelectItem>
-                                                            <SelectItem value="South Africa">South Africa</SelectItem>
-                                                            <SelectItem value="United States">United States</SelectItem>
-                                                            <SelectItem value="United Kingdom">United Kingdom</SelectItem>
+                                                            <SelectItem value="Ethiopia">Ethiopia</SelectItem><SelectItem value="Kenya">Kenya</SelectItem>
+                                                            <SelectItem value="Nigeria">Nigeria</SelectItem><SelectItem value="South Africa">South Africa</SelectItem>
+                                                            <SelectItem value="United States">United States</SelectItem><SelectItem value="United Kingdom">United Kingdom</SelectItem>
                                                         </SelectContent>
                                                     </Select>
                                                 ) : (
-                                                    <div className="flex items-center gap-2 p-2 px-3 rounded-lg border bg-muted/50">
-                                                        <MapPin className="w-4 h-4" />
+                                                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg border bg-muted/30">
+                                                        <MapPin className="w-4 h-4 text-muted-foreground" />
                                                         <span>{data.country}</span>
                                                     </div>
                                                 )}
                                             </div>
-
                                             <div className="space-y-2">
-                                                <Label htmlFor="city">City</Label>
+                                                <Label>City</Label>
                                                 {isEditing ? (
-                                                    <Input
-                                                        id="city"
-                                                        value={editData.city || ''}
-                                                        onChange={(e) => handleInputChange('city', e.target.value)}
-                                                    />
+                                                    <Input value={editData.city || ''} onChange={(e) => handleInputChange('city', e.target.value)} />
                                                 ) : (
-                                                    <div className="p-2 px-3 rounded-lg border bg-muted/50">
-                                                        <span>{data.city}</span>
-                                                    </div>
+                                                    <div className="px-3 py-2 rounded-lg border bg-muted/30">{data.city}</div>
                                                 )}
                                             </div>
                                         </div>
-
                                         <div className="space-y-4">
                                             <div className="space-y-2">
-                                                <Label htmlFor="address">Address</Label>
+                                                <Label>Address</Label>
                                                 {isEditing ? (
-                                                    <Input
-                                                        id="address"
-                                                        value={editData.address || ''}
-                                                        onChange={(e) => handleInputChange('address', e.target.value)}
-                                                    />
+                                                    <Input value={editData.address || ''} onChange={(e) => handleInputChange('address', e.target.value)} />
                                                 ) : (
-                                                    <div className="p-2 px-3 rounded-lg border bg-muted/50">
-                                                        <span>{data.address || 'Not specified'}</span>
-                                                    </div>
+                                                    <div className="px-3 py-2 rounded-lg border bg-muted/30">{data.address || 'Not specified'}</div>
                                                 )}
                                             </div>
-
                                             <div className="space-y-2">
-                                                <Label htmlFor="website">Website</Label>
+                                                <Label>Website</Label>
                                                 {isEditing ? (
-                                                    <Input
-                                                        id="website"
-                                                        type="url"
-                                                        value={editData.website || ''}
-                                                        onChange={(e) => handleInputChange('website', e.target.value)}
-                                                        placeholder="https://example.com"
-                                                    />
+                                                    <Input type="url" value={editData.website || ''} onChange={(e) => handleInputChange('website', e.target.value)} placeholder="https://" />
                                                 ) : data.website ? (
-                                                    <a
-                                                        href={data.website}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="flex items-center gap-2 p-2 px-3 rounded-lg border bg-muted/50 hover:bg-muted transition-colors"
-                                                    >
-                                                        <Globe className="w-4 h-4" />
-                                                        <span className="text-primary hover:underline">
-                                                            {data.website.replace(/^https?:\/\//, '')}
-                                                        </span>
-                                                        <ExternalLink className="w-3 h-3 ml-auto" />
+                                                    <a href={data.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-3 py-2 rounded-lg border bg-muted/30 hover:bg-muted/50 transition-colors">
+                                                        <Globe className="w-4 h-4 text-muted-foreground" />
+                                                        <span className="text-primary hover:underline">{data.website.replace(/^https?:\/\//, '')}</span>
+                                                        <Link2 className="w-3 h-3 ml-auto text-muted-foreground" />
                                                     </a>
                                                 ) : (
-                                                    <div className="p-2 px-3 rounded-lg border bg-muted/50">
-                                                        <span className="text-muted-foreground">Not set</span>
-                                                    </div>
+                                                    <div className="px-3 py-2 rounded-lg border bg-muted/30 text-muted-foreground">Not set</div>
                                                 )}
                                             </div>
                                         </div>
                                     </div>
 
-                                    {/* Edit Mode Actions for Business Tab */}
-                                    {isEditing && activeTab === 'business' && (
-                                        <div className="flex justify-end gap-3 pt-6 border-t">
-                                            <Button
-                                                variant="outline"
-                                                onClick={handleCancel}
-                                                className="gap-2"
-                                                disabled={updateMutation.isPending}
-                                            >
-                                                <X className="w-4 h-4" />
-                                                Cancel
-                                            </Button>
-                                            <Button
-                                                onClick={handleSave}
-                                                className="gap-2"
-                                                disabled={updateMutation.isPending}
-                                            >
-                                                {updateMutation.isPending ? (
-                                                    <>
-                                                        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                                                        Saving...
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <Save className="w-4 h-4" />
-                                                        Save Changes
-                                                    </>
-                                                )}
-                                            </Button>
-                                        </div>
-                                    )}
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
-
-                        {/* Preferences Tab */}
-                        <TabsContent value="preferences" className="space-y-6">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Notification Preferences</CardTitle>
-                                    <CardDescription>
-                                        Control how and when you receive notifications
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-6">
-                                    <div className="space-y-4">
-                                        <div className="flex items-center justify-between">
-                                            <div className="space-y-1">
-                                                <Label htmlFor="notifications_enabled">Enable Notifications</Label>
-                                                <p className="text-sm text-muted-foreground">
-                                                    Receive notifications about your ads and account activity
-                                                </p>
-                                            </div>
-                                            {isEditing ? (
-                                                <Switch
-                                                    id="notifications_enabled"
-                                                    checked={editData.notifications_enabled}
-                                                    onCheckedChange={(checked) => handleInputChange('notifications_enabled', checked)}
-                                                />
-                                            ) : (
-                                                <Badge variant={data.notifications_enabled ? "default" : "outline"}>
-                                                    {data.notifications_enabled ? (
-                                                        <>
-                                                            <Bell className="w-3 h-3 mr-1" />
-                                                            Enabled
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <BellOff className="w-3 h-3 mr-1" />
-                                                            Disabled
-                                                        </>
-                                                    )}
-                                                </Badge>
-                                            )}
-                                        </div>
-
-                                        <div className="flex items-center justify-between">
-                                            <div className="space-y-1">
-                                                <Label htmlFor="email_notifications">Email Notifications</Label>
-                                                <p className="text-sm text-muted-foreground">
-                                                    Receive email updates about your account
-                                                </p>
-                                            </div>
-                                            {isEditing ? (
-                                                <Switch
-                                                    id="email_notifications"
-                                                    checked={editData.email_notifications}
-                                                    onCheckedChange={(checked) => handleInputChange('email_notifications', checked)}
-                                                />
-                                            ) : (
-                                                <Badge variant={data.email_notifications ? "default" : "outline"}>
-                                                    {data.email_notifications ? (
-                                                        <>
-                                                            <MailIcon className="w-3 h-3 mr-1" />
-                                                            Enabled
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <Mail className="w-3 h-3 mr-1" />
-                                                            Disabled
-                                                        </>
-                                                    )}
-                                                </Badge>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {/* Edit Mode Actions for Preferences Tab */}
-                                    {isEditing && activeTab === 'preferences' && (
-                                        <div className="flex justify-end gap-3 pt-6 border-t">
-                                            <Button
-                                                variant="outline"
-                                                onClick={handleCancel}
-                                                className="gap-2"
-                                                disabled={updateMutation.isPending}
-                                            >
-                                                <X className="w-4 h-4" />
-                                                Cancel
-                                            </Button>
-                                            <Button
-                                                onClick={handleSave}
-                                                className="gap-2"
-                                                disabled={updateMutation.isPending}
-                                            >
-                                                {updateMutation.isPending ? (
-                                                    <>
-                                                        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                                                        Saving...
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <Save className="w-4 h-4" />
-                                                        Save Changes
-                                                    </>
-                                                )}
-                                            </Button>
-                                        </div>
-                                    )}
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
-
-                        {/* Subscription Tab */}
-                        <TabsContent value="subscription" className="space-y-6">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Subscription Details</CardTitle>
-                                    <CardDescription>
-                                        Manage your subscription plan and billing information
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-6">
-                                    <div className="grid md:grid-cols-2 gap-6">
-                                        <div className="space-y-4">
-                                            <div>
-                                                <h4 className="text-sm font-medium text-muted-foreground mb-1">Current Plan</h4>
-                                                <Badge variant={isPremium ? "default" : "outline"} className="text-lg px-4 py-2">
-                                                    {data.subscription_plan}
-                                                </Badge>
-                                            </div>
-
-                                            <div>
-                                                <h4 className="text-sm font-medium text-muted-foreground mb-1">Status</h4>
-                                                <Badge variant={data.subscription_active ? "default" : "outline"}>
-                                                    {data.subscription_active ? 'Active' : 'Inactive'}
-                                                </Badge>
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-4">
-                                            <div>
-                                                <h4 className="text-sm font-medium text-muted-foreground mb-1">Total Spent</h4>
-                                                <p className="text-2xl font-bold">{formatCurrency(data.total_spent)}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
-
-                        {/* Security Tab */}
-                        <TabsContent value="security" className="space-y-6">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Account Security</CardTitle>
-                                    <CardDescription>
-                                        Manage your account security settings
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-6">
-                                    <div className="space-y-4">
-                                        <div className="flex items-center justify-between">
-                                            <div className="space-y-1">
-                                                <Label>Two-Factor Authentication</Label>
-                                                <p className="text-sm text-muted-foreground">
-                                                    Add an extra layer of security to your account
-                                                </p>
-                                            </div>
-                                            <Badge variant="outline">Not Enabled</Badge>
-                                        </div>
-
-                                        <div className="flex items-center justify-between">
-                                            <div className="space-y-1">
-                                                <Label>Last Active</Label>
-                                                <p className="text-sm text-muted-foreground">
-                                                    {data.last_active_at ? formatDate(data.last_active_at) : 'Never'}
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex items-center justify-between">
-                                            <div className="space-y-1">
-                                                <Label>Account Status</Label>
-                                                <p className="text-sm text-muted-foreground">
-                                                    {data.is_active ? 'Active' : 'Suspended'}
-                                                </p>
-                                            </div>
-                                            <Badge variant={data.is_active ? "default" : "destructive"}>
-                                                {data.is_active ? 'Active' : 'Suspended'}
-                                            </Badge>
-                                        </div>
-                                    </div>
+                                    <AnimatePresence>
+                                        {isEditing && activeTab === 'business' && (
+                                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="flex justify-end gap-3 pt-4 border-t">
+                                                <Button variant="outline" onClick={handleCancel} disabled={updateMutation.isPending}>Cancel</Button>
+                                                <Button onClick={handleSave} disabled={updateMutation.isPending} className="gap-2">
+                                                    {updateMutation.isPending ? <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" /> : <Save className="w-4 h-4" />}
+                                                    Save Changes
+                                                </Button>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
                                 </CardContent>
                             </Card>
                         </TabsContent>
                     </Tabs>
-                </div>
+                </motion.div>
             </div>
         </div>
     )
