@@ -46,7 +46,7 @@ import {
 import { useAppSelector } from "@/store/hook"
 import { useLocation } from "react-router-dom"
 import { ModeToggle } from "../mode-toggle"
-import { SunMoonIcon } from "lucide-react"
+import { SunMoonIcon, Wallet } from "lucide-react"
 
 // -------- Types --------
 export interface DocumentItem {
@@ -89,18 +89,15 @@ export function AdminSideBar(props: React.ComponentProps<typeof Sidebar>) {
 
     navMain: [
       { title: "Overview", url: "/admin", icon: IconInnerShadowTop },
-      // { title: "Advertisers", url: "/admin/advertisers", icon: IconBriefcase },
       { title: "Users", url: "/admin/users", icon: IconListDetails },
       { title: "Trafic", url: "/admin/trafic", icon: IconShoppingCart },
-      // { title: "Wallet", url: "/admin/money", icon: IconWallet },
+      { title: "Payment Processors", url: "/admin/payment-processor", icon: IconWallet },
+      { title: "Subscriptions", url: "/admin/subscription", icon: IconWallet },
       { title: "Variables", url: "/admin/log", icon: IconSettings },
     ],
 
 
 
-    navSecondary: [
-      { title: "Get Help", url: "/advertiser/help", icon: IconHelp },
-    ],
   }
 
   // Helper function to check if a path is active

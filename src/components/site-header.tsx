@@ -27,7 +27,7 @@ export function SiteHeader() {
           <h1 className="text-base font-medium">Dashboard</h1>
         </div>
         <div className="ml-auto flex items-center gap-2">
-          {user?.type !== "admin" && user?.type !== "payment_processor" && <AdvertiserWallet />}
+          {user?.type === "advertiser" && <AdvertiserWallet />}
         </div>
       </div>
     </motion.header>

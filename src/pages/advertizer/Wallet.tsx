@@ -124,6 +124,7 @@ export default function AdvertiserWallet() {
         queryFn: getUserSubscriptions,
         queryKey: ["getUserSubscriptions"]
     })
+    
 
     const {
         register,
@@ -139,7 +140,7 @@ export default function AdvertiserWallet() {
             amount: 0,
         },
     })
-
+    
     const hasActiveSubscription = subscription?.some((item: any) => item?.subscription?.is_active === true) ?? false
 
     const activeSubscription = subscription?.find((item: any) => item?.subscription?.is_active === true)
