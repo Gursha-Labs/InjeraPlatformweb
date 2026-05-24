@@ -253,7 +253,7 @@ export default function AdvertiserAd() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {ads.map((ad: any, index: number) => {
                             const status = getAdStatus(ad.view_count || 0, ad.created_at || new Date().toISOString())
-                            const videoUrl = `https://pub-7fa68a27c9094c06b1a9403bec80db5a.r2.dev/${ad.video_url}`
+                            const videoUrl = `${ad.video_url}`
 
                             return (
                                 <motion.div

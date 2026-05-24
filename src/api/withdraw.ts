@@ -131,3 +131,7 @@ export const cancelWithdrawal = async (withdrawalId: string) => {
     apiClinet.delete(`/withdrawals/${withdrawalId}`),
   );
 };
+
+export const getUsersWithdrawalhistory = async () => {
+  return handleApiResponse(() => apiClinet.get("/withdrawals/history"));
+};

@@ -67,7 +67,7 @@ const AnimatedNumber = ({ value, prefix = "", suffix = "" }: { value: number; pr
         }
     })
 
-    return <span>{prefix}{displayValue.toLocaleString()}{suffix}</span>
+    return <span>{prefix}{displayValue}{suffix}</span>
 }
 
 // Stat card component
@@ -120,11 +120,12 @@ export default function AdvertiserWallet() {
         queryFn: getWalletBalance,
     })
 
+
     const { data: subscription } = useQuery({
         queryFn: getUserSubscriptions,
         queryKey: ["getUserSubscriptions"]
     })
-    
+
 
     const {
         register,
@@ -140,7 +141,7 @@ export default function AdvertiserWallet() {
             amount: 0,
         },
     })
-    
+
     const hasActiveSubscription = subscription?.some((item: any) => item?.subscription?.is_active === true) ?? false
 
     const activeSubscription = subscription?.find((item: any) => item?.subscription?.is_active === true)
@@ -170,8 +171,8 @@ export default function AdvertiserWallet() {
         })
     }
 
-    const balance = wallet?.data?.balance ?? 0
-
+    const balance = wallet?.data?.balance
+    console.log(wallet?.data?.balance)
     return (
         <motion.div
             initial={{ opacity: 0, x: 20 }}

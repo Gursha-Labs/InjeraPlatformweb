@@ -54,3 +54,7 @@ export const Withdrawalrequest = async (data: WithdrawalRequestPayload) => {
     }),
   );
 };
+
+export const getAdvertiserTransaction = async () => {
+  return handleApiResponse(() => apiClient.get("/advertiser/deposits-history"));
+};
