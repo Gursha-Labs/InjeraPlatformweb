@@ -43,7 +43,7 @@ import {
 import { useAppSelector } from "@/store/hook"
 import { useLocation } from "react-router-dom"
 import { ModeToggle } from "../mode-toggle"
-import { SunMoonIcon } from "lucide-react"
+import { ListOrderedIcon, SunMoonIcon } from "lucide-react"
 
 // -------- Types --------
 export interface DocumentItem {
@@ -86,6 +86,8 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       { title: "Overview", url: "/advertiser", icon: IconInnerShadowTop },
       { title: "Ad Videos", url: "/advertiser/advideo", icon: IconBriefcase },
       { title: "Create Ad Video", url: "/advertiser/advideo/create", icon: IconListDetails },
+      { title: "Orders", url: "/advertiser/order", icon: ListOrderedIcon },
+      { title: "Transactions", url: "/advertiser/transactions", icon: IconWallet },
       { title: "Settings", url: "/advertiser/settings", icon: IconSettings },
     ],
 

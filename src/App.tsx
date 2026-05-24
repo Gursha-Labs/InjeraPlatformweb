@@ -47,6 +47,8 @@ import { PaymentProcessSidebar } from "./components/paymentprocess/app-sidebar";
 import PaymnetPage from "./pages/paymentprocessor/PaymentPage";
 import PaymentProcessor from "./pages/admin/PaymentProcessor";
 import Subscription from "./pages/admin/Subscription";
+import Order from "./pages/advertizer/Order";
+import Transactions from "./pages/advertizer/Transactions";
 
 function App() {
   const dispatch = useAppDispatch();
@@ -92,6 +94,8 @@ function App() {
               <Route path="analytics" element={<UploadAd />} />
               <Route path="reports" element={<UploadAd />} />
               <Route path="help" element={<UploadAd />} />
+              <Route path="transactions" element={<Transactions />} />
+              <Route path="order" element={<Order />} />
               <Route path="settings" element={<AdvertiserProfile />} />
             </Route>
           </Route>

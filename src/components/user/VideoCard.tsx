@@ -1,29 +1,39 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
     MessageCircle,
-    Coins,
     Search,
     BookmarkPlus,
     ExternalLink,
-
+    ShoppingCart,
 } from "lucide-react";
 import {
     Sheet,
     SheetContent,
-
     SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter,
+    DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import type { AdVideo } from "@/types/models/adVideo";
 import { AdvertiserHoverCard } from "./AdvertiserHoverCard";
-import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import ShareDialog from "./ShareDialog";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { addVidoeFinshed, fetchUserPoints } from "@/api/feed";
-import { useQuery } from "@tanstack/react-query";
+import { addVidoeFinshed } from "@/api/feed";
 import Comment from "./Comment";
+import { createOrder } from "@/api/order";
+import { toast } from "sonner";
+import { useMutation } from "@tanstack/react-query";
 
 interface VideoCardProps {
     v: AdVideo;
@@ -31,14 +41,16 @@ interface VideoCardProps {
     activeIndex: number;
 }
 
-export function VideoCard({ v, index, activeIndex }: VideoCardProps) {
+export function VideoCard({
+    v,
+    index,
+    activeIndex,
+}: VideoCardProps) {
     const videoRef = useRef<HTMLVideoElement | null>(null);
 
-    // const { data, isLoading } = useQuery({
-    //     queryKey: ["fetchUserPoints"],
-    //     queryFn: fetchUserPoints,
-    //     refetchInterval: 2000
-    // })
+    const [quantity, setQuantity] = useState(1);
+
+    const variant = v.product_variant?.[0];
 
     useEffect(() => {
         const video = videoRef.current;
@@ -51,9 +63,29 @@ export function VideoCard({ v, index, activeIndex }: VideoCardProps) {
             video.currentTime = 0;
         }
     }, [index, activeIndex]);
+
     const handleVideoFinish = async () => {
-        await addVidoeFinshed(v.id)
-    }
+        await addVidoeFinshed(v.id);
+    };
+
+    const { mutate, isPending } = useMutation({
+        mutationFn: createOrder,
+        onSuccess: () => {
+            toast.success("Order created successfully");
+        },
+        onError: () => {
+            toast.error("Failed to create order");
+        },
+    });
+
+    const handleCreateOrder = () => {
+        if (!variant) return;
+
+        mutate({
+            video_id: v.id,
+            quantity,
+        });
+    };
 
     return (
         <div
@@ -70,30 +102,18 @@ export function VideoCard({ v, index, activeIndex }: VideoCardProps) {
                 {/* Video */}
                 <video
                     ref={videoRef}
-                    src={`https://pub-7fa68a27c9094c06b1a9403bec80db5a.r2.dev/${v.video_url}`}
+                    src={v.video_url}
                     className="h-full w-full object-cover"
                     playsInline
-
                     onEnded={handleVideoFinish}
                 />
 
-                {/* 🔥 Gradient Overlays */}
+                {/* Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/10 to-black/70 z-10" />
 
-                {/* ⭐ Top Section */}
+                {/* Top */}
                 <div className="absolute top-5 left-5 right-5 flex items-start justify-between z-20">
                     <div>
-                        {/* Coins */}
-                        {/* <motion.div
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="flex items-center gap-2 bg-white/20 backdrop-blur-md shadow-lg px-4 py-1.5 rounded-full"
-                        >
-                            <Coins className="w-4 h-4 text-yellow-300" />
-                            <span className="text-sm font-semibold text-white">{isLoading ? <>Loading</> : data?.points}</span>
-                        </motion.div> */}
-
-                        {/* Advertiser */}
                         <motion.div
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
@@ -102,8 +122,14 @@ export function VideoCard({ v, index, activeIndex }: VideoCardProps) {
                         >
                             <Link to={`/injera/profile/${v.advertiser.id}`}>
                                 <Avatar className="ring-2 ring-white/80 shadow">
-                                    <AvatarImage src={v.advertiser.avatar} />
-                                    <AvatarFallback>{v.advertiser.username?.charAt(0).toUpperCase()}</AvatarFallback>
+                                    <AvatarImage
+                                        src={v.advertiser.avatar}
+                                    />
+                                    <AvatarFallback>
+                                        {v.advertiser.username
+                                            ?.charAt(0)
+                                            .toUpperCase()}
+                                    </AvatarFallback>
                                 </Avatar>
                             </Link>
 
@@ -111,7 +137,6 @@ export function VideoCard({ v, index, activeIndex }: VideoCardProps) {
                         </motion.div>
                     </div>
 
-                    {/* Search Button */}
                     <motion.div
                         initial={{ opacity: 0, x: 10 }}
                         animate={{ opacity: 1, x: 0 }}
@@ -125,33 +150,135 @@ export function VideoCard({ v, index, activeIndex }: VideoCardProps) {
                     </motion.div>
                 </div>
 
-                {/* 🔖 Tags + Title */}
+                {/* Bottom Info */}
                 <motion.div
                     initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.15 }}
                     className="absolute bottom-20 left-5 max-w-[80%] text-white z-20"
                 >
-                    <h2 className="text-lg font-semibold drop-shadow-md">{v.title}</h2>
+                    <h2 className="text-lg font-semibold drop-shadow-md">
+                        {v.title}
+                    </h2>
+
                     <p className="text-xs text-gray-200 drop-shadow">
                         {v.tags.map((tag) => tag.name).join(" · ")}
                     </p>
+
+                    {variant && (
+                        <div className="mt-3 bg-white/20 backdrop-blur-md rounded-xl p-3">
+                            <p className="text-sm font-semibold">
+                                ${variant.price}
+                            </p>
+
+                            <p className="text-xs text-gray-200">
+                                {variant.location}
+                            </p>
+                        </div>
+                    )}
                 </motion.div>
 
-                {/* Action Buttons */}
+                {/* Actions */}
                 <div className="absolute right-5 bottom-28 flex flex-col gap-6 items-center z-20">
+
                     <Sheet>
-                        <SheetTrigger >
-                            <ActionButton icon={<MessageCircle />} label="Comments" />
+                        <SheetTrigger>
+                            <ActionButton
+                                icon={<MessageCircle />}
+                                label="Comments"
+                            />
                         </SheetTrigger>
+
                         <SheetContent>
                             <Comment v={v} />
                         </SheetContent>
                     </Sheet>
 
-                    <ActionButton icon={<BookmarkPlus />} label="Save" />
+                    {/* ORDER BUTTON */}
+                    {variant && (
+                        <Dialog>
+                            <DialogTrigger asChild>
+                                <div>
+                                    <ActionButton
+                                        icon={<ShoppingCart />}
+                                        label="Order"
+                                    />
+                                </div>
+                            </DialogTrigger>
+
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>
+                                        Create Order
+                                    </DialogTitle>
+                                </DialogHeader>
+
+                                <div className="space-y-4 py-4">
+                                    <div className="space-y-2">
+                                        <Label>Quantity</Label>
+
+                                        <Input
+                                            type="number"
+                                            min={1}
+                                            value={quantity}
+                                            onChange={(e) =>
+                                                setQuantity(
+                                                    Number(e.target.value)
+                                                )
+                                            }
+                                        />
+                                    </div>
+
+                                    <div className="rounded-xl border p-4">
+                                        <div className="flex justify-between text-sm">
+                                            <span>Price</span>
+                                            <span>
+                                                ${variant.price}
+                                            </span>
+                                        </div>
+
+                                        <div className="flex justify-between text-sm mt-2">
+                                            <span>Quantity</span>
+                                            <span>{quantity}</span>
+                                        </div>
+
+                                        <div className="flex justify-between font-semibold mt-4">
+                                            <span>Total</span>
+                                            <span>
+                                                $
+                                                {variant.price *
+                                                    quantity}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <DialogFooter>
+                                    <Button
+                                        onClick={handleCreateOrder}
+                                        disabled={isPending}
+                                        className="w-full"
+                                    >
+                                        {isPending
+                                            ? "Processing..."
+                                            : "Confirm Order"}
+                                    </Button>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
+                    )}
+
+                    <ActionButton
+                        icon={<BookmarkPlus />}
+                        label="Save"
+                    />
+
                     <ShareDialog v={v} />
-                    <ActionButton icon={<ExternalLink />} label="Visit" />
+
+                    <ActionButton
+                        icon={<ExternalLink />}
+                        label="Visit"
+                    />
                 </div>
             </motion.div>
         </div>
@@ -179,7 +306,10 @@ export function ActionButton({
             >
                 {icon}
             </Button>
-            <span className="text-xs mt-1 text-white drop-shadow">{label}</span>
+
+            <span className="text-xs mt-1 text-white drop-shadow">
+                {label}
+            </span>
         </motion.div>
     );
 }
